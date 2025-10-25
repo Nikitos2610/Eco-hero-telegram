@@ -59,7 +59,7 @@
         }
         #touch-controls { 
             display: flex; position: fixed; bottom: 1vw; left: 50%; transform: translateX(-50%); 
-            z-index: 20; margin: 0 auto; width: fit-content; justify-content: center; gap: 12vw; /* Ещё больше расстояние */
+            z-index: 20; margin: 0 auto; width: fit-content; justify-content: center; gap: 12vw; 
         }
         #touch-controls button { 
             padding: 2vw; font-size: 2.5vw; background: linear-gradient(45deg, #4caf50, #2196f3); 
@@ -86,9 +86,9 @@
             #end-screen button, #win-screen button, #pause-screen button, #intro-screen button { 
                 font-size: 3vw; padding: 2vw 4vw; 
             }
-            #touch-controls { gap: 15vw; } /* Максимальное расстояние */
+            #touch-controls { gap: 15vw; }
             #touch-controls button { width: 12vw; height: 12vw; font-size: 4vw; }
-            canvas { height: calc(100% - 15vw); } /* Увеличено место под кнопки */
+            canvas { height: calc(100% - 15vw); }
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
@@ -191,7 +191,7 @@
             const MAX_POWERUPS = 3;
             const QUIZ_DURATION = 15000;
             const GRAVITY = 0.4;
-            const COIN_LIFETIME = 600;
+            const COIN_LIFETIME = 800;
             const MONSTER_LIFETIME_MIN = 900;
             const MONSTER_LIFETIME_MAX = 1500;
             const BOSS_LIFETIME = { 4: 1500, 5: 1200 };
@@ -205,8 +205,8 @@
 
             // Определяем масштабы
             const isMobile = window.innerWidth < 600;
-            const objectScale = isMobile ? 0.7 : 1; // Для объектов
-            const platformScale = isMobile ? 0.4 : 0.8; // Ещё меньше для платформ
+            const objectScale = isMobile ? 0.7 : 1;
+            const platformScale = isMobile ? 0.5 : 0.8;
 
             // Инициализация DOM-элементов
             const canvas = document.getElementById('canvas');
@@ -288,8 +288,8 @@
 
             const platforms = [
                 { x: 0, y: canvas.height - 50 * platformScale, width: canvas.width, height: 50 * platformScale },
-                { x: 250, y: canvas.height - 200 * platformScale, width: 250 * platformScale, height: 25 * platformScale },
-                { x: 600, y: canvas.height - 250 * platformScale, width: 200 * platformScale, height: 25 * platformScale }
+                { x: 250, y: canvas.height - 100 * platformScale, width: 200 * platformScale, height: 25 * platformScale },
+                { x: 600, y: canvas.height - 150 * platformScale, width: 200 * platformScale, height: 25 * platformScale }
             ];
 
             const quizzes = [
@@ -357,23 +357,29 @@
                        obj1.y + obj1.height > obj2.y;
             }
 
-            function generateSafePosition(size = 20 * objectScale, restrictY = false) {
+            function generateSafePosition(size = 20 * objectScale, restrictY = false, preferPlatform = false) {
                 let attempts = 0;
                 let x, y;
-                const maxY = canvas.height - 200 * platformScale; // Уменьшено ограничение для более низкого появления целей
-                do {
-                    attempts++;
-                    x = Math.random() * (canvas.width - size * 2) + size;
-                    if (restrictY) {
-                        y = level === 3 && Math.random() < 0.2 ? canvas.height - 250 * platformScale + Math.random() * 50 * platformScale : canvas.height - 90 * platformScale;
-                    } else {
-                        y = Math.random() * (maxY - 70 * platformScale) + 70 * platformScale; // Ограничение высоты
-                    }
-                    if (attempts > 100) {
-                        console.warn('Не удалось найти безопасную позицию для объекта');
-                        return { x: Math.max(100, canvas.width - size * 2), y: platforms[0].y - size };
-                    }
-                } while (isOverlapping({x, y, width: size, height: size}, {x: player.x, y: player.y, width: player.width, height: player.height}) || platforms.some(p => isOverlapping({x, y, width: size, height: size}, p)));
+                const maxY = canvas.height - 150 * platformScale;
+                if (preferPlatform && Math.random() < 0.7 && platforms.length > 1) {
+                    const platform = platforms[Math.floor(Math.random() * (platforms.length - 1)) + 1];
+                    x = platform.x + Math.random() * (platform.width - size);
+                    y = platform.y - size;
+                } else {
+                    do {
+                        attempts++;
+                        x = Math.random() * (canvas.width - size * 2) + size;
+                        if (restrictY) {
+                            y = level === 3 && Math.random() < 0.2 ? canvas.height - 250 * platformScale + Math.random() * 50 * platformScale : canvas.height - 90 * platformScale;
+                        } else {
+                            y = Math.random() * (maxY - 70 * platformScale) + 70 * platformScale;
+                        }
+                        if (attempts > 100) {
+                            console.warn('Не удалось найти безопасную позицию для объекта');
+                            return { x: Math.max(100, canvas.width - size * 2), y: platforms[0].y - size };
+                        }
+                    } while (isOverlapping({x, y, width: size, height: size}, {x: player.x, y: player.y, width: player.width, height: player.height}) || platforms.some(p => isOverlapping({x, y, width: size, height: size}, p)));
+                }
                 return { x, y };
             }
 
@@ -742,7 +748,7 @@
                 if (keys['ArrowLeft'] && player.x > 0) player.x -= 8 * objectScale;
                 if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += 8 * objectScale;
                 if (keys['Space'] && !player.jumping) {
-                    player.vy = -20 * objectScale; // Ещё больше сила прыжка
+                    player.vy = -24 * objectScale;
                     player.jumping = true;
                 }
 
@@ -949,7 +955,7 @@
 
             function spawnCoin() {
                 if (coins.length >= MAX_COINS) return;
-                const pos = generateSafePosition(15 * objectScale);
+                const pos = generateSafePosition(15 * objectScale, false, level >= 3);
                 if (pos) {
                     pos.lifetime = COIN_LIFETIME;
                     coins.push(pos);
@@ -958,13 +964,13 @@
 
             function spawnMonster() {
                 if (monsters.length >= MAX_MONSTERS) return;
-                const pos = generateSafePosition(40 * objectScale, level <= 3);
+                const pos = generateSafePosition(40 * objectScale, level <= 3, level >= 3);
                 if (pos) monsters.push({ ...pos, dir: Math.random() > 0.5 ? 1 : -1, lifetime: Math.floor(Math.random() * (MONSTER_LIFETIME_MAX - MONSTER_LIFETIME_MIN)) + MONSTER_LIFETIME_MIN, vy: 0 });
             }
 
             function spawnPowerup() {
                 if (powerups.length >= MAX_POWERUPS) return;
-                const pos = generateSafePosition(15 * objectScale);
+                const pos = generateSafePosition(15 * objectScale, false, level >= 3);
                 if (pos) powerups.push(pos);
             }
 
@@ -1105,14 +1111,29 @@
                 platforms.length = 0;
                 platforms.push(
                     { x: 0, y: canvas.height - 50 * platformScale, width: canvas.width, height: 50 * platformScale },
-                    { x: 250, y: canvas.height - 150 * platformScale, width: 250 * platformScale, height: 25 * platformScale }, // Сделаны выше
-                    { x: 600, y: canvas.height - 200 * platformScale, width: 200 * platformScale, height: 25 * platformScale } // Сделаны выше
+                    { x: 250, y: canvas.height - 100 * platformScale, width: 200 * platformScale, height: 25 * platformScale },
+                    { x: 600, y: canvas.height - 150 * platformScale, width: 200 * platformScale, height: 25 * platformScale }
                 );
-                if (level >= 2) platforms.push({ x: 400, y: canvas.height - 300 * platformScale, width: 200 * platformScale, height: 25 * platformScale });
-                if (level >= 3) platforms.push({ x: 200, y: canvas.height - 400 * platformScale, width: 120 * platformScale, height: 25 * platformScale }, { x: 650, y: canvas.height - 350 * platformScale, width: 120 * platformScale, height: 25 * platformScale });
-                if (level >= 4) platforms.push({ x: 300, y: canvas.height - 450 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 750, y: canvas.height - 400 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
-                if (level >= 5) platforms.push({ x: 100, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 500, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
-                if (level >= 6) platforms.push({ x: 800, y: canvas.height - 270 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 300, y: canvas.height - 200 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
+                if (level >= 2) platforms.push(
+                    { x: 400, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
+                );
+                if (level >= 3) platforms.push(
+                    { x: 200, y: canvas.height - 350 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
+                    { x: 400, y: canvas.height - 200 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
+                    { x: 650, y: canvas.height - 300 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
+                );
+                if (level >= 4) platforms.push(
+                    { x: 300, y: canvas.height - 400 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
+                    { x: 600, y: canvas.height - 350 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
+                );
+                if (level >= 5) platforms.push(
+                    { x: 100, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
+                    { x: 500, y: canvas.height - 300 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
+                );
+                if (level >= 6) platforms.push(
+                    { x: 800, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
+                    { x: 300, y: canvas.height - 200 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
+                );
                 if (level === 3 || level === 5) spawnPowerup();
             }
 
@@ -1154,11 +1175,7 @@
 
             function startGame() {
                 gameStarted = true;
-                if (Telegram.WebApp) {
-                    introScreen.style.display = 'none';
-                } else {
-                    introScreen.style.display = 'none';
-                }
+                introScreen.style.display = 'none';
                 spawnCoin();
                 spawnCoin();
                 spawnMonster();
@@ -1280,18 +1297,17 @@
                 bgCanvas.height = canvas.height;
                 staticBgCanvas.width = canvas.width;
                 staticBgCanvas.height = canvas.height;
-                player.y = canvas.height - 110 * objectScale;
-                updateLevel();
                 initStaticBackground();
                 drawBackground();
-                render();
+                player.x = Math.min(player.x, canvas.width - player.width);
+                player.y = Math.min(player.y, canvas.height - player.height);
             });
 
+            // Инициализация игры
             addTouchControls();
             initStaticBackground();
             drawBackground();
-            updateUI();
-            startGame();
+            introScreen.style.display = 'block';
         } catch (e) {
             console.error('Ошибка инициализации игры:', e);
             showError('Ошибка загрузки игры. Попробуйте перезагрузить страницу.');
