@@ -4,110 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Эко-Герой: Охота за Энергией</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script> <!-- Интеграция Telegram Mini Apps -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap');
         body { margin: 0; padding: 0; overflow: hidden; background: #e0f7fa; font-family: 'Inter', Arial, sans-serif; color: #333; }
         #game-container { position: relative; width: 100vw; height: 100vh; margin: 0; border: none; overflow: hidden; background: #a5d6a7; }
-        canvas { display: block; width: 100%; height: 100%; }
-        #score { position: absolute; top: 10px; left: 10px; font-size: 28px; color: #fff; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 20px; font-weight: 600; }
-        #level { position: absolute; top: 10px; right: 10px; font-size: 28px; color: #fff; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 20px; font-weight: 600; }
-        #health-bar { position: absolute; top: 50px; left: 10px; width: 250px; height: 25px; background: #ddd; border: 3px solid #000; border-radius: 12px; }
-        #health-fill { height: 100%; background: linear-gradient(to right, red, yellow, green); border-radius: 10px; transition: width 0.3s; }
-        #health-text { position: absolute; top: 50px; left: 10px; width: 250px; text-align: center; font-size: 18px; color: #000; font-weight: 600; }
-        #quiz { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 20px 15px 15px; border-radius: 20px; display: none; text-align: center; z-index: 10; font-size: 18px; border: 1px solid rgba(255, 255, 255, 0.2); animation: scaleIn 0.5s ease-out; width: 80%; max-width: 400px; }
+        canvas { display: block; width: 100%; height: calc(100% - 80px); } /* Оставляем место для кнопок */
+        #score { position: absolute; top: 1vw; left: 1vw; font-size: 3vw; color: #fff; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.6); padding: 0.5vw 1vw; border-radius: 1vw; font-weight: 600; }
+        #level { position: absolute; top: 1vw; right: 1vw; font-size: 3vw; color: #fff; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.6); padding: 0.5vw 1vw; border-radius: 1vw; font-weight: 600; }
+        #health-bar { position: absolute; top: 5vw; left: 1vw; width: 25vw; height: 2.5vw; background: #ddd; border: 0.3vw solid #000; border-radius: 1.2vw; }
+        #health-fill { height: 100%; background: linear-gradient(to right, red, yellow, green); border-radius: 1vw; transition: width 0.3s; }
+        #health-text { position: absolute; top: 5vw; left: 1vw; width: 25vw; text-align: center; font-size: 1.8vw; color: #000; font-weight: 600; }
+        #quiz { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 2vw; border-radius: 2vw; display: none; text-align: center; z-index: 10; font-size: 2vw; border: 0.1vw solid rgba(255, 255, 255, 0.2); width: 80%; max-width: 40vw; }
         #quiz.final #skip-quiz { display: none; }
-        #quiz h2 { background: linear-gradient(45deg, #4caf50, #2196f3); -webkit-background-clip: text; background-clip: text; color: #333 !important; animation: pulse 1.5s infinite; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); margin-top: 0; }
-        #quiz p { color: #333; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
-        #quiz button { margin: 10px; padding: 10px 20px; background: linear-gradient(45deg, #4caf50, #2196f3); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; transition: transform 0.2s, opacity 0.3s; opacity: 0; }
+        #quiz h2 { background: linear-gradient(45deg, #4caf50, #2196f3); -webkit-background-clip: text; background-clip: text; color: #333; animation: pulse 1.5s infinite; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); margin-top: 0; font-size: 2.5vw; }
+        #quiz p { color: #333; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); font-size: 2vw; }
+        #quiz button { margin: 1vw; padding: 1vw 2vw; background: linear-gradient(45deg, #4caf50, #2196f3); color: white; border: none; border-radius: 1vw; cursor: pointer; font-size: 1.6vw; font-weight: 600; transition: transform 0.2s, opacity 0.3s; opacity: 0; }
         #quiz button.show { opacity: 1; animation: fadeIn 0.3s ease-in; }
         #quiz button.clicked { transform: scale(1.1); }
         #quiz button:disabled { opacity: 0.5; cursor: not-allowed; }
-        #quiz-timer { width: 70%; margin: 10px auto; height: 8px; background: #ddd; border: 2px solid #000; border-radius: 5px; animation: timerPulse 1s infinite; }
+        #quiz-timer { width: 70%; margin: 1vw auto; height: 0.8vw; background: #ddd; border: 0.2vw solid #000; border-radius: 0.5vw; animation: timerPulse 1s infinite; }
         #quiz-timer.warning #quiz-timer-fill { background: #f44336; }
-        #quiz-timer-fill { height: 100%; background: linear-gradient(to right, #2196f3, #4caf50); border-radius: 3px; transition: width 0.1s; }
-        #quiz-timer-text { font-size: 12px; color: #333; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); margin: 5px 0; }
-        #end-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; display: none; text-align: center; z-index: 10; font-size: 24px; color: #333; border: 1px solid rgba(255, 255, 255, 0.2); width: 80%; max-width: 400px; }
-        #end-screen h2, #end-screen p { background: linear-gradient(45deg, #4caf50, #2196f3); -webkit-background-clip: text; background-clip: text; color: #333 !important; animation: pulse 1.5s infinite; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
-        #end-screen button { margin-top: 20px; padding: 15px 30px; font-size: 22px; font-weight: 700; color: #fff; background: linear-gradient(45deg, #00d4ff, #ff4081); border: none; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), 0 0 30px rgba(255, 64, 129, 0.3); cursor: pointer; transition: transform 0.2s, box-shadow 0.3s, background 0.3s; animation: neonPulse 2s infinite ease-in-out; }
-        #end-screen button:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(0, 212, 255, 0.7), 0 0 50px rgba(255, 64, 129, 0.5); background: linear-gradient(45deg, #ff4081, #00d4ff); }
-        #pause-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; display: none; text-align: center; z-index: 10; font-size: 28px; color: #333; border: 1px solid rgba(255, 255, 255, 0.2); width: 80%; max-width: 400px; }
-        #pause-screen h2, #pause-screen p { background: linear-gradient(45deg, #4caf50, #2196f3); -webkit-background-clip: text; background-clip: text; color: #333 !important; animation: pulse 1.5s infinite; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
-        #pause-screen button { margin-top: 20px; padding: 15px 30px; font-size: 22px; font-weight: 700; color: #fff; background: linear-gradient(45deg, #00d4ff, #ff4081); border: none; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), 0 0 30px rgba(255, 64, 129, 0.3); cursor: pointer; transition: transform 0.2s, box-shadow 0.3s, background 0.3s; animation: neonPulse 2s infinite ease-in-out; }
-        #pause-screen button:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(0, 212, 255, 0.7), 0 0 50px rgba(255, 64, 129, 0.5); background: linear-gradient(45deg, #ff4081, #00d4ff); }
-        #win-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, rgba(76, 175, 80, 0.5), rgba(33, 150, 243, 0.5)); backdrop-filter: blur(12px); padding: 40px; border-radius: 20px; display: none; text-align: center; z-index: 10; font-size: 26px; line-height: 1.5; width: 70%; max-width: 400px; color: #333; border: 1px solid rgba(255, 255, 255, 0.3); animation: scaleIn 0.5s ease-out; }
-        #win-screen h2, #win-screen p, #win-screen ul { color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
-        #win-screen button { margin-top: 20px; padding: 15px 30px; font-size: 22px; font-weight: 700; color: #fff; background: linear-gradient(45deg, #00d4ff, #ff4081); border: none; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), 0 0 30px rgba(255, 64, 129, 0.3); cursor: pointer; transition: transform 0.2s, box-shadow 0.3s, background 0.3s; animation: neonPulse 2s infinite ease-in-out; }
-        #win-screen button:hover { transform: scale(1.1); box-shadow: 0 0 25px rgba(0, 212, 255, 0.7), 0 0 50px rgba(255, 64, 129, 0.5); background: linear-gradient(45deg, #ff4081, #00d4ff); }
-        #intro-screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 20px; border-radius: 20px; text-align: center; z-index: 100; font-size: 18px; line-height: 1.5; width: 80%; max-width: 400px; max-height: 400px; overflow-y: auto; animation: fadeIn 0.5s; display: block; color: #333; border: 1px solid rgba(255, 255, 255, 0.2); }
-        #intro-screen h2, #intro-screen p { background: linear-gradient(45deg, #4caf50, #2196f3); -webkit-background-clip: text; background-clip: text; color: #333 !important; animation: pulse 1.5s infinite; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
-        #intro-screen button { margin-top: 20px; padding: 15px 30px; font-size: 22px; background: linear-gradient(45deg, #4caf50, #2196f3); color: white; border: none; border-radius: 10px; font-weight: 600; transition: transform 0.2s; }
-        #intro-screen button:hover { transform: scale(1.05); }
+        #quiz-timer-fill { height: 100%; background: linear-gradient(to right, #2196f3, #4caf50); border-radius: 0.3vw; transition: width 0.1s; }
+        #quiz-timer-text { font-size: 1.2vw; color: #333; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); margin: 0.5vw 0; }
+        #end-screen, #win-screen, #pause-screen, #intro-screen { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); 
+            padding: 2vw; border-radius: 2vw; display: none; text-align: center; 
+            z-index: 10; font-size: 2vw; color: #333; border: 0.1vw solid rgba(255, 255, 255, 0.2); 
+            width: 80%; max-width: 40vw; 
+        }
+        #end-screen h2, #win-screen h2, #pause-screen h2, #intro-screen h2, 
+        #end-screen p, #win-screen p, #pause-screen p, #intro-screen p, 
+        #win-screen ul { 
+            background: linear-gradient(45deg, #4caf50, #2196f3); 
+            -webkit-background-clip: text; background-clip: text; 
+            color: #333; animation: pulse 1.5s infinite; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7); 
+            font-size: 2.5vw; 
+        }
+        #end-screen button, #win-screen button, #pause-screen button, #intro-screen button { 
+            margin-top: 2vw; padding: 1.5vw 3vw; font-size: 2vw; font-weight: 700; 
+            color: #fff; background: linear-gradient(45deg, #00d4ff, #ff4081); 
+            border: none; border-radius: 1.2vw; 
+            box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.5), 0 0 3vw rgba(255, 64, 129, 0.3); 
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.3s, background 0.3s; 
+            animation: neonPulse 2s infinite ease-in-out; 
+        }
+        #end-screen button:hover, #win-screen button:hover, #pause-screen button:hover, #intro-screen button:hover { 
+            transform: scale(1.1); 
+            box-shadow: 0 0 2.5vw rgba(0, 212, 255, 0.7), 0 0 5vw rgba(255, 64, 129, 0.5); 
+            background: linear-gradient(45deg, #ff4081, #00d4ff); 
+        }
         #touch-controls { 
-            display: flex; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 20;
-            margin: 10px auto;
-            width: fit-content;
-            justify-content: center;
-            gap: 20px; /* Увеличено расстояние между кнопками */
+            display: flex; position: fixed; bottom: 1vw; left: 50%; transform: translateX(-50%); 
+            z-index: 20; margin: 0 auto; width: fit-content; justify-content: center; gap: 3vw; /* Увеличенный отступ */
         }
         #touch-controls button { 
-            padding: 20px; 
-            font-size: 24px; 
-            background: linear-gradient(45deg, #4caf50, #2196f3); 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            width: 60px; 
-            height: 60px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            touch-action: manipulation; 
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
-            user-select: none; /* Предотвращает контекстное меню при долгом нажатии */
+            padding: 2vw; font-size: 2.5vw; background: linear-gradient(45deg, #4caf50, #2196f3); 
+            color: white; border: none; border-radius: 1.2vw; width: 6vw; height: 6vw; 
+            display: flex; align-items: center; justify-content: center; touch-action: manipulation; 
+            box-shadow: 0 0 1vw rgba(0,0,0,0.3); transition: transform 0.2s, box-shadow 0.2s; 
+            user-select: none; 
         }
         #touch-controls button:active { 
-            transform: scale(0.95); 
+            transform: scale(0.9); box-shadow: 0 0 1.5vw rgba(0,0,0,0.5); 
         }
         @media (max-width: 600px) {
-            #quiz, #end-screen, #pause-screen, #intro-screen {
-                font-size: 12px; /* Уменьшенный шрифт для мобильных */
-                padding: 10px; /* Уменьшенные отступы */
-                width: 90%; /* Уменьшенная ширина */
-                max-width: 300px; /* Ограничение максимальной ширины */
+            #score, #level { font-size: 4vw; padding: 1vw; }
+            #health-bar { width: 30vw; height: 3vw; top: 6vw; }
+            #health-text { width: 30vw; font-size: 2vw; top: 6vw; }
+            #quiz, #end-screen, #win-screen, #pause-screen, #intro-screen { 
+                font-size: 3vw; padding: 2vw; max-width: 90vw; 
             }
-            #win-screen {
-                font-size: 12px; /* Уменьшенный шрифт для мобильных */
-                padding: 10px; /* Уменьшенные отступы */
-                width: 80%; /* Уменьшенная ширина */
-                max-width: 300px; /* Ограничение максимальной ширины */
+            #quiz h2, #end-screen h2, #win-screen h2, #pause-screen h2, #intro-screen h2 { font-size: 3.5vw; }
+            #quiz p, #end-screen p, #win-screen p, #pause-screen p, #intro-screen p { font-size: 3vw; }
+            #quiz button { font-size: 2.5vw; padding: 1.5vw 2.5vw; }
+            #quiz-timer { height: 1vw; }
+            #quiz-timer-text { font-size: 2vw; }
+            #end-screen button, #win-screen button, #pause-screen button, #intro-screen button { 
+                font-size: 3vw; padding: 2vw 4vw; 
             }
-            #quiz button, #end-screen button, #win-screen button, #pause-screen button, #intro-screen button {
-                font-size: 10px; /* Уменьшенный размер шрифта кнопок */
-                padding: 6px 12px; /* Уменьшенные отступы кнопок */
-            }
-            #quiz-timer { height: 5px; } /* Уменьшенная высота таймера */
-            #quiz-timer-text { font-size: 8px; } /* Уменьшенный шрифт текста таймера */
-            #score, #level { font-size: 16px; } /* Уменьшенный шрифт для очков и уровня */
-            #health-bar, #health-text { width: 120px; } /* Уменьшенная ширина полоски здоровья */
-            #health-text { font-size: 12px; } /* Уменьшенный шрифт текста здоровья */
-            #message { font-size: 16px; padding: 10px; } /* Уменьшенные размеры уведомлений */
-            #touch-controls { 
-                display: flex; /* Показываем кнопки только на мобильных устройствах */
-            }
+            #touch-controls { gap: 4vw; } /* Ещё больше расстояние для мобильных */
+            #touch-controls button { width: 10vw; height: 10vw; font-size: 4vw; }
+            canvas { height: calc(100% - 12vw); } /* Увеличиваем место под кнопки */
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         @keyframes scaleIn { from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
         @keyframes timerPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         @keyframes neonPulse {
-            0%, 100% { box-shadow: 0 0 15px rgba(0, 212, 255, 0.5), 0 0 30px rgba(255, 64, 129, 0.3); }
-            50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.7), 0 0 40px rgba(255, 64, 129, 0.4); }
+            0%, 100% { box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.5), 0 0 3vw rgba(255, 64, 129, 0.3); }
+            50% { box-shadow: 0 0 2vw rgba(0, 212, 255, 0.7), 0 0 4vw rgba(255, 64, 129, 0.4); }
         }
-        #message { position: absolute; top: 150px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 15px; border-radius: 20px; display: none; font-size: 24px; z-index: 15; color: #333; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); animation: pulse 1.5s infinite; border: 1px solid rgba(255, 255, 255, 0.2); }
-        #error { position: absolute; top: 80px; left: 10px; color: #d32f2f; font-size: 18px; font-family: 'Inter', Arial, sans-serif; font-weight: 600; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 10px; border-radius: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); }
+        #message { 
+            position: absolute; top: 15vw; left: 50%; transform: translateX(-50%); 
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); 
+            padding: 1.5vw; border-radius: 2vw; display: none; font-size: 2.5vw; 
+            z-index: 15; color: #333; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); 
+            animation: pulse 1.5s infinite; border: 0.1vw solid rgba(255, 255, 255, 0.2); 
+        }
+        #error { 
+            position: absolute; top: 8vw; left: 1vw; color: #d32f2f; font-size: 2vw; 
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); 
+            padding: 1vw; border-radius: 2vw; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); 
+        }
     </style>
 </head>
 <body>
@@ -158,9 +160,9 @@
         <div id="error"></div>
     </div>
     <div id="touch-controls">
-        <button id="touch-jump">↑</button>
         <button id="touch-left">←</button>
         <button id="touch-right">→</button>
+        <button id="touch-jump">↑</button>
     </div>
 
     <script type="text/javascript">
@@ -168,11 +170,11 @@
             // Инициализация Telegram Mini Apps
             if (window.Telegram && Telegram.WebApp) {
                 Telegram.WebApp.ready();
-                Telegram.WebApp.expand(); // Расширяет на весь экран
+                Telegram.WebApp.expand();
                 Telegram.WebApp.onEvent('backButtonClicked', () => { restartGame(); });
                 Telegram.WebApp.onEvent('viewportChanged', () => {
                     canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
+                    canvas.height = window.innerHeight - 80; // Оставляем место для кнопок
                     bgCanvas.width = canvas.width;
                     bgCanvas.height = canvas.height;
                     staticBgCanvas.width = canvas.width;
@@ -187,9 +189,9 @@
             const MAX_COINS = 8;
             const MAX_MONSTERS = 7;
             const MAX_POWERUPS = 3;
-            const QUIZ_DURATION = 15000; // мс
+            const QUIZ_DURATION = 15000;
             const GRAVITY = 0.4;
-            const COIN_LIFETIME = 600; // кадры
+            const COIN_LIFETIME = 600;
             const MONSTER_LIFETIME_MIN = 900;
             const MONSTER_LIFETIME_MAX = 1500;
             const BOSS_LIFETIME = { 4: 1500, 5: 1200 };
@@ -204,7 +206,7 @@
             // Инициализация DOM-элементов
             const canvas = document.getElementById('canvas');
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.height = window.innerHeight - 80; // Оставляем место для кнопок
             const ctx = canvas.getContext('2d');
             if (!ctx) {
                 showError('Ваш браузер не поддерживает Canvas. Попробуйте другой браузер.');
@@ -510,7 +512,10 @@
                 ctx.shadowColor = 'rgba(0,0,0,0.3)';
                 coins.forEach(c => {
                     c.lifetime--;
-                    if (c.lifetime <= 0) return false;
+                    if (c.lifetime <= 0) {
+                        spawnCoin();
+                        return false;
+                    }
                     ctx.save();
                     ctx.translate(c.x, c.y);
                     ctx.rotate(frameCount * 0.1);
@@ -1144,7 +1149,7 @@
             function startGame() {
                 gameStarted = true;
                 if (Telegram.WebApp) {
-                    introScreen.style.display = 'none'; // Автостарт без intro в Telegram
+                    introScreen.style.display = 'none';
                 } else {
                     introScreen.style.display = 'none';
                 }
@@ -1204,7 +1209,6 @@
             }
 
             function addTouchControls() {
-                // Удаляем старые обработчики, чтобы избежать дублирования
                 touchLeft.removeEventListener('touchstart', handleTouchLeftStart);
                 touchLeft.removeEventListener('touchend', handleTouchLeftEnd);
                 touchRight.removeEventListener('touchstart', handleTouchRightStart);
@@ -1212,22 +1216,18 @@
                 touchJump.removeEventListener('touchstart', handleTouchJumpStart);
                 touchJump.removeEventListener('touchend', handleTouchJumpEnd);
 
-                // Обработчики для кнопки влево
                 function handleTouchLeftStart() { keys['ArrowLeft'] = true; }
                 function handleTouchLeftEnd() { keys['ArrowLeft'] = false; }
-                // Обработчики для кнопки вправо
                 function handleTouchRightStart() { keys['ArrowRight'] = true; }
                 function handleTouchRightEnd() { keys['ArrowRight'] = false; }
-                // Обработчики для кнопки прыжка
                 function handleTouchJumpStart() { 
                     if (!player.jumping) {
                         keys['Space'] = true;
-                        setTimeout(() => { keys['Space'] = false; }, 100); // Имитация кратковременного нажатия
+                        setTimeout(() => { keys['Space'] = false; }, 100);
                     }
                 }
                 function handleTouchJumpEnd() { keys['Space'] = false; }
 
-                // Добавляем новые обработчики
                 touchLeft.addEventListener('touchstart', handleTouchLeftStart);
                 touchLeft.addEventListener('touchend', handleTouchLeftEnd);
                 touchRight.addEventListener('touchstart', handleTouchRightStart);
@@ -1236,7 +1236,6 @@
                 touchJump.addEventListener('touchend', handleTouchJumpEnd);
             }
 
-            // Обработчики событий
             document.addEventListener('keydown', e => {
                 if (e.code === 'KeyP' && gameStarted && !gameOver && !quizActive) {
                     togglePause();
@@ -1270,7 +1269,7 @@
 
             window.addEventListener('resize', () => {
                 canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+                canvas.height = window.innerHeight - 80;
                 bgCanvas.width = canvas.width;
                 bgCanvas.height = canvas.height;
                 staticBgCanvas.width = canvas.width;
@@ -1282,12 +1281,11 @@
                 render();
             });
 
-            // Инициализация
             addTouchControls();
             initStaticBackground();
             drawBackground();
             updateUI();
-            startGame(); // Автостарт
+            startGame();
         } catch (e) {
             console.error('Ошибка инициализации игры:', e);
             showError('Ошибка загрузки игры. Попробуйте перезагрузить страницу.');
