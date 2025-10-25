@@ -10,7 +10,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap');
         body { margin: 0; padding: 0; overflow: hidden; background: #e0f7fa; font-family: 'Inter', Arial, sans-serif; color: #333; }
         #game-container { position: relative; width: 100vw; height: 100vh; margin: 0; border: none; overflow: hidden; background: #a5d6a7; }
-        canvas { display: block; width: 100%; height: calc(100% - 80px); } /* Оставляем место для кнопок */
+        canvas { display: block; width: 100%; height: calc(100% - 80px); }
         #score { position: absolute; top: 1vw; left: 1vw; font-size: 3vw; color: #fff; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.6); padding: 0.5vw 1vw; border-radius: 1vw; font-weight: 600; }
         #level { position: absolute; top: 1vw; right: 1vw; font-size: 3vw; color: #fff; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.6); padding: 0.5vw 1vw; border-radius: 1vw; font-weight: 600; }
         #health-bar { position: absolute; top: 5vw; left: 1vw; width: 25vw; height: 2.5vw; background: #ddd; border: 0.3vw solid #000; border-radius: 1.2vw; }
@@ -59,7 +59,7 @@
         }
         #touch-controls { 
             display: flex; position: fixed; bottom: 1vw; left: 50%; transform: translateX(-50%); 
-            z-index: 20; margin: 0 auto; width: fit-content; justify-content: center; gap: 5vw; /* Увеличенный отступ */
+            z-index: 20; margin: 0 auto; width: fit-content; justify-content: center; gap: 8vw; /* Увеличено расстояние */
         }
         #touch-controls button { 
             padding: 2vw; font-size: 2.5vw; background: linear-gradient(45deg, #4caf50, #2196f3); 
@@ -76,19 +76,19 @@
             #health-bar { width: 30vw; height: 3vw; top: 6vw; }
             #health-text { width: 30vw; font-size: 2vw; top: 6vw; }
             #quiz, #end-screen, #win-screen, #pause-screen, #intro-screen { 
-                font-size: 3vw; padding: 2vw; max-width: 90vw; 
+                font-size: 3.5vw; padding: 2vw; max-width: 90vw; 
             }
-            #quiz h2, #end-screen h2, #win-screen h2, #pause-screen h2, #intro-screen h2 { font-size: 3.5vw; }
-            #quiz p, #end-screen p, #win-screen p, #pause-screen p, #intro-screen p { font-size: 3vw; }
+            #quiz h2, #end-screen h2, #win-screen h2, #pause-screen h2, #intro-screen h2 { font-size: 4vw; }
+            #quiz p, #end-screen p, #win-screen p, #pause-screen p, #intro-screen p { font-size: 3.5vw; }
             #quiz button { font-size: 2.5vw; padding: 1.5vw 2.5vw; }
             #quiz-timer { height: 1vw; }
             #quiz-timer-text { font-size: 2vw; }
             #end-screen button, #win-screen button, #pause-screen button, #intro-screen button { 
                 font-size: 3vw; padding: 2vw 4vw; 
             }
-            #touch-controls { gap: 6vw; } /* Ещё больше расстояние для мобильных */
-            #touch-controls button { width: 10vw; height: 10vw; font-size: 4vw; }
-            canvas { height: calc(100% - 12vw); } /* Увеличиваем место под кнопки */
+            #touch-controls { gap: 10vw; } /* Ещё больше расстояние */
+            #touch-controls button { width: 12vw; height: 12vw; font-size: 4vw; }
+            canvas { height: calc(100% - 15vw); } /* Увеличено место под кнопки */
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
@@ -174,7 +174,7 @@
                 Telegram.WebApp.onEvent('backButtonClicked', () => { restartGame(); });
                 Telegram.WebApp.onEvent('viewportChanged', () => {
                     canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight - 80; // Оставляем место для кнопок
+                    canvas.height = window.innerHeight - 80;
                     bgCanvas.width = canvas.width;
                     bgCanvas.height = canvas.height;
                     staticBgCanvas.width = canvas.width;
@@ -203,14 +203,15 @@
             const TEACHER_LIFETIME_QUIZ_MIN = 300;
             const COLLISION_TOLERANCE = 15;
 
-            // Определяем масштаб для мобильных устройств
+            // Определяем масштабы
             const isMobile = window.innerWidth < 600;
-            const objectScale = isMobile ? 0.7 : 1; // Уменьшаем размер объектов на 30% для мобильных
+            const objectScale = isMobile ? 0.7 : 1; // Для объектов
+            const platformScale = isMobile ? 0.5 : 0.8; // Для платформ (меньше)
 
             // Инициализация DOM-элементов
             const canvas = document.getElementById('canvas');
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 80; // Оставляем место для кнопок
+            canvas.height = window.innerHeight - 80;
             const ctx = canvas.getContext('2d');
             if (!ctx) {
                 showError('Ваш браузер не поддерживает Canvas. Попробуйте другой браузер.');
@@ -250,7 +251,7 @@
             const touchRight = document.getElementById('touch-right');
             const touchJump = document.getElementById('touch-jump');
 
-            // Инициализация переменных с адаптацией размера
+            // Инициализация переменных
             let score = 0, lastScore = -1;
             let level = 1, lastLevel = -1;
             let health = 100, lastHealth = -1;
@@ -286,9 +287,9 @@
             let startAnimationTimer = 0;
 
             const platforms = [
-                { x: 0, y: canvas.height - 50 * objectScale, width: canvas.width, height: 50 * objectScale },
-                { x: 250, y: canvas.height - 200 * objectScale, width: 250 * objectScale, height: 25 * objectScale },
-                { x: 600, y: canvas.height - 250 * objectScale, width: 200 * objectScale, height: 25 * objectScale }
+                { x: 0, y: canvas.height - 50 * platformScale, width: canvas.width, height: 50 * platformScale },
+                { x: 250, y: canvas.height - 200 * platformScale, width: 250 * platformScale, height: 25 * platformScale },
+                { x: 600, y: canvas.height - 250 * platformScale, width: 200 * platformScale, height: 25 * platformScale }
             ];
 
             const quizzes = [
@@ -311,44 +312,6 @@
                 fact: 'Выключайте свет и устройства — это простой способ сберечь энергию!'
             };
 
-            // Обработка XLSX файлов
-            var gk_isXlsx = false;
-            var gk_xlsxFileLookup = {};
-            var gk_fileData = {};
-            function filledCell(cell) {
-                return cell !== '' && cell != null;
-            }
-            function loadFileData(filename) {
-                if (typeof XLSX === 'undefined') {
-                    console.error('Библиотека XLSX не загружена');
-                    showError('Ошибка загрузки данных. Попробуйте перезагрузить страницу.');
-                    return "";
-                }
-                if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-                    try {
-                        var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                        var firstSheetName = workbook.SheetNames[0];
-                        var worksheet = workbook.Sheets[firstSheetName];
-                        var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                        var filteredData = jsonData.filter(row => row.some(filledCell));
-                        var headerRowIndex = filteredData.findIndex((row, index) =>
-                            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                        );
-                        if (headerRowIndex === -1 || headerRowIndex > 25) {
-                            headerRowIndex = 0;
-                        }
-                        var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-                        csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                        return csv;
-                    } catch (e) {
-                        console.error(e);
-                        showError('Ошибка обработки данных XLSX.');
-                        return "";
-                    }
-                }
-                return gk_fileData[filename] || "";
-            }
-
             function isOverlapping(obj1, obj2) {
                 return obj1.x < obj2.x + obj2.width &&
                        obj1.x + obj1.width > obj2.x &&
@@ -359,13 +322,14 @@
             function generateSafePosition(size = 20 * objectScale, restrictY = false) {
                 let attempts = 0;
                 let x, y;
+                const maxY = canvas.height - 300 * platformScale; // Ограничение высоты для целей
                 do {
                     attempts++;
                     x = Math.random() * (canvas.width - size * 2) + size;
                     if (restrictY) {
-                        y = level === 3 && Math.random() < 0.2 ? canvas.height - 250 * objectScale + Math.random() * 50 * objectScale : canvas.height - 90 * objectScale;
+                        y = level === 3 && Math.random() < 0.2 ? canvas.height - 250 * platformScale + Math.random() * 50 * platformScale : canvas.height - 90 * platformScale;
                     } else {
-                        y = Math.random() * (canvas.height - 100 * objectScale - 70 * objectScale) + 70 * objectScale;
+                        y = Math.random() * (maxY - 70 * platformScale) + 70 * platformScale; // Ограничение высоты
                     }
                     if (attempts > 100) {
                         console.warn('Не удалось найти безопасную позицию для объекта');
@@ -397,9 +361,9 @@
 
                     bgCtx.fillStyle = '#228b22';
                     bgCtx.beginPath();
-                    bgCtx.moveTo(0, bgCanvas.height - 50 * objectScale);
-                    for (let i = 0; i <= bgCanvas.width; i += 100 * objectScale) {
-                        bgCtx.quadraticCurveTo(i + 50 * objectScale, bgCanvas.height - 100 * objectScale + Math.sin(i / 50 + grassWave) * 20 * objectScale, i + 100 * objectScale, bgCanvas.height - 50 * objectScale);
+                    bgCtx.moveTo(0, bgCanvas.height - 50 * platformScale);
+                    for (let i = 0; i <= bgCanvas.width; i += 100 * platformScale) {
+                        bgCtx.quadraticCurveTo(i + 50 * platformScale, bgCanvas.height - 100 * platformScale + Math.sin(i / 50 + grassWave) * 20 * platformScale, i + 100 * platformScale, bgCanvas.height - 50 * platformScale);
                     }
                     bgCtx.lineTo(bgCanvas.width, bgCanvas.height);
                     bgCtx.lineTo(0, bgCanvas.height);
@@ -407,22 +371,22 @@
                     grassWave += 0.05;
 
                     bgCtx.fillStyle = '#2196f3';
-                    bgCtx.fillRect(100 * objectScale, bgCanvas.height - 80 * objectScale, 120 * objectScale, 40 * objectScale);
+                    bgCtx.fillRect(100 * platformScale, bgCanvas.height - 80 * platformScale, 120 * platformScale, 40 * platformScale);
                 }
             }
 
             function drawSolarPanels() {
                 ctx.save();
                 ctx.fillStyle = '#2196f3';
-                ctx.fillRect(100 * objectScale, canvas.height - 80 * objectScale, 120 * objectScale, 40 * objectScale);
+                ctx.fillRect(100 * platformScale, canvas.height - 80 * platformScale, 120 * platformScale, 40 * platformScale);
                 ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 1 * objectScale;
+                ctx.lineWidth = 1 * platformScale;
                 for (let j = 0; j < 6; j++) {
                     for (let k = 0; k < 2; k++) {
                         const alpha = 0.5 + 0.5 * Math.sin(frameCount * 0.05 + (j + k * 6) * 0.5);
                         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-                        ctx.fillRect(100 * objectScale + j * 20 * objectScale, canvas.height - 80 * objectScale + k * 20 * objectScale, 20 * objectScale, 20 * objectScale);
-                        ctx.strokeRect(100 * objectScale + j * 20 * objectScale, canvas.height - 80 * objectScale + k * 20 * objectScale, 20 * objectScale, 20 * objectScale);
+                        ctx.fillRect(100 * platformScale + j * 20 * platformScale, canvas.height - 80 * platformScale + k * 20 * platformScale, 20 * platformScale, 20 * platformScale);
+                        ctx.strokeRect(100 * platformScale + j * 20 * platformScale, canvas.height - 80 * platformScale + k * 20 * platformScale, 20 * platformScale, 20 * platformScale);
                     }
                 }
                 ctx.restore();
@@ -430,17 +394,17 @@
 
             function drawWindmill() {
                 ctx.save();
-                ctx.translate(canvas.width - 150 * objectScale, canvas.height - 350 * objectScale);
+                ctx.translate(canvas.width - 150 * platformScale, canvas.height - 350 * platformScale);
                 ctx.rotate(frameCount * 0.05);
                 ctx.fillStyle = '#fff';
-                ctx.fillRect(-10 * objectScale, -80 * objectScale, 20 * objectScale, 160 * objectScale);
+                ctx.fillRect(-10 * platformScale, -80 * platformScale, 20 * platformScale, 160 * platformScale);
                 ctx.rotate(Math.PI * 2 / 3);
-                ctx.fillRect(-10 * objectScale, -80 * objectScale, 20 * objectScale, 160 * objectScale);
+                ctx.fillRect(-10 * platformScale, -80 * platformScale, 20 * platformScale, 160 * platformScale);
                 ctx.rotate(Math.PI * 2 / 3);
-                ctx.fillRect(-10 * objectScale, -80 * objectScale, 20 * objectScale, 160 * objectScale);
+                ctx.fillRect(-10 * platformScale, -80 * platformScale, 20 * platformScale, 160 * platformScale);
                 ctx.restore();
                 ctx.fillStyle = '#fff';
-                ctx.fillRect(canvas.width - 150 * objectScale, canvas.height - 350 * objectScale, 10 * objectScale, 300 * objectScale);
+                ctx.fillRect(canvas.width - 150 * platformScale, canvas.height - 350 * platformScale, 10 * platformScale, 300 * platformScale);
             }
 
             function drawPlayer() {
@@ -503,7 +467,7 @@
 
             function drawPlatforms() {
                 ctx.save();
-                ctx.shadowBlur = 5 * objectScale;
+                ctx.shadowBlur = 5 * platformScale;
                 ctx.shadowColor = 'rgba(0,0,0,0.3)';
                 ctx.fillStyle = '#795548';
                 platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
@@ -740,7 +704,7 @@
                 if (keys['ArrowLeft'] && player.x > 0) player.x -= 8 * objectScale;
                 if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += 8 * objectScale;
                 if (keys['Space'] && !player.jumping) {
-                    player.vy = -15 * objectScale;
+                    player.vy = -18 * objectScale; // Увеличена сила прыжка
                     player.jumping = true;
                 }
 
@@ -1102,15 +1066,15 @@
             function updateLevel() {
                 platforms.length = 0;
                 platforms.push(
-                    { x: 0, y: canvas.height - 50 * objectScale, width: canvas.width, height: 50 * objectScale },
-                    { x: 250, y: canvas.height - 200 * objectScale, width: 250 * objectScale, height: 25 * objectScale },
-                    { x: 600, y: canvas.height - 250 * objectScale, width: 200 * objectScale, height: 25 * objectScale }
+                    { x: 0, y: canvas.height - 50 * platformScale, width: canvas.width, height: 50 * platformScale },
+                    { x: 250, y: canvas.height - 200 * platformScale, width: 250 * platformScale, height: 25 * platformScale },
+                    { x: 600, y: canvas.height - 250 * platformScale, width: 200 * platformScale, height: 25 * platformScale }
                 );
-                if (level >= 2) platforms.push({ x: 400, y: canvas.height - 350 * objectScale, width: 200 * objectScale, height: 25 * objectScale });
-                if (level >= 3) platforms.push({ x: 200, y: canvas.height - 450 * objectScale, width: 120 * objectScale, height: 25 * objectScale }, { x: 650, y: canvas.height - 400 * objectScale, width: 120 * objectScale, height: 25 * objectScale });
-                if (level >= 4) platforms.push({ x: 300, y: canvas.height - 500 * objectScale, width: 150 * objectScale, height: 25 * objectScale }, { x: 750, y: canvas.height - 450 * objectScale, width: 150 * objectScale, height: 25 * objectScale });
-                if (level >= 5) platforms.push({ x: 100, y: canvas.height - 300 * objectScale, width: 150 * objectScale, height: 25 * objectScale }, { x: 500, y: canvas.height - 300 * objectScale, width: 150 * objectScale, height: 25 * objectScale });
-                if (level >= 6) platforms.push({ x: 800, y: canvas.height - 320 * objectScale, width: 150 * objectScale, height: 25 * objectScale }, { x: 300, y: canvas.height - 250 * objectScale, width: 150 * objectScale, height: 25 * objectScale });
+                if (level >= 2) platforms.push({ x: 400, y: canvas.height - 350 * platformScale, width: 200 * platformScale, height: 25 * platformScale });
+                if (level >= 3) platforms.push({ x: 200, y: canvas.height - 450 * platformScale, width: 120 * platformScale, height: 25 * platformScale }, { x: 650, y: canvas.height - 400 * platformScale, width: 120 * platformScale, height: 25 * platformScale });
+                if (level >= 4) platforms.push({ x: 300, y: canvas.height - 500 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 750, y: canvas.height - 450 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
+                if (level >= 5) platforms.push({ x: 100, y: canvas.height - 300 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 500, y: canvas.height - 300 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
+                if (level >= 6) platforms.push({ x: 800, y: canvas.height - 320 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 300, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
                 if (level === 3 || level === 5) spawnPowerup();
             }
 
