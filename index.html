@@ -59,7 +59,7 @@
         }
         #touch-controls { 
             display: flex; position: fixed; bottom: 1vw; left: 50%; transform: translateX(-50%); 
-            z-index: 20; margin: 0 auto; width: fit-content; justify-content: center; gap: 8vw; /* Увеличено расстояние */
+            z-index: 20; margin: 0 auto; width: fit-content; justify-content: center; gap: 12vw; /* Ещё больше расстояние */
         }
         #touch-controls button { 
             padding: 2vw; font-size: 2.5vw; background: linear-gradient(45deg, #4caf50, #2196f3); 
@@ -86,7 +86,7 @@
             #end-screen button, #win-screen button, #pause-screen button, #intro-screen button { 
                 font-size: 3vw; padding: 2vw 4vw; 
             }
-            #touch-controls { gap: 10vw; } /* Ещё больше расстояние */
+            #touch-controls { gap: 15vw; } /* Максимальное расстояние */
             #touch-controls button { width: 12vw; height: 12vw; font-size: 4vw; }
             canvas { height: calc(100% - 15vw); } /* Увеличено место под кнопки */
         }
@@ -206,7 +206,7 @@
             // Определяем масштабы
             const isMobile = window.innerWidth < 600;
             const objectScale = isMobile ? 0.7 : 1; // Для объектов
-            const platformScale = isMobile ? 0.5 : 0.8; // Для платформ (меньше)
+            const platformScale = isMobile ? 0.4 : 0.8; // Ещё меньше для платформ
 
             // Инициализация DOM-элементов
             const canvas = document.getElementById('canvas');
@@ -312,6 +312,44 @@
                 fact: 'Выключайте свет и устройства — это простой способ сберечь энергию!'
             };
 
+            // Обработка XLSX файлов
+            var gk_isXlsx = false;
+            var gk_xlsxFileLookup = {};
+            var gk_fileData = {};
+            function filledCell(cell) {
+                return cell !== '' && cell != null;
+            }
+            function loadFileData(filename) {
+                if (typeof XLSX === 'undefined') {
+                    console.error('Библиотека XLSX не загружена');
+                    showError('Ошибка загрузки данных. Попробуйте перезагрузить страницу.');
+                    return "";
+                }
+                if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                    try {
+                        var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                        var firstSheetName = workbook.SheetNames[0];
+                        var worksheet = workbook.Sheets[firstSheetName];
+                        var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                        var filteredData = jsonData.filter(row => row.some(filledCell));
+                        var headerRowIndex = filteredData.findIndex((row, index) =>
+                            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                        );
+                        if (headerRowIndex === -1 || headerRowIndex > 25) {
+                            headerRowIndex = 0;
+                        }
+                        var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                        csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                        return csv;
+                    } catch (e) {
+                        console.error(e);
+                        showError('Ошибка обработки данных XLSX.');
+                        return "";
+                    }
+                }
+                return gk_fileData[filename] || "";
+            }
+
             function isOverlapping(obj1, obj2) {
                 return obj1.x < obj2.x + obj2.width &&
                        obj1.x + obj1.width > obj2.x &&
@@ -322,7 +360,7 @@
             function generateSafePosition(size = 20 * objectScale, restrictY = false) {
                 let attempts = 0;
                 let x, y;
-                const maxY = canvas.height - 300 * platformScale; // Ограничение высоты для целей
+                const maxY = canvas.height - 200 * platformScale; // Уменьшено ограничение для более низкого появления целей
                 do {
                     attempts++;
                     x = Math.random() * (canvas.width - size * 2) + size;
@@ -704,7 +742,7 @@
                 if (keys['ArrowLeft'] && player.x > 0) player.x -= 8 * objectScale;
                 if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += 8 * objectScale;
                 if (keys['Space'] && !player.jumping) {
-                    player.vy = -18 * objectScale; // Увеличена сила прыжка
+                    player.vy = -20 * objectScale; // Ещё больше сила прыжка
                     player.jumping = true;
                 }
 
@@ -1067,14 +1105,14 @@
                 platforms.length = 0;
                 platforms.push(
                     { x: 0, y: canvas.height - 50 * platformScale, width: canvas.width, height: 50 * platformScale },
-                    { x: 250, y: canvas.height - 200 * platformScale, width: 250 * platformScale, height: 25 * platformScale },
-                    { x: 600, y: canvas.height - 250 * platformScale, width: 200 * platformScale, height: 25 * platformScale }
+                    { x: 250, y: canvas.height - 150 * platformScale, width: 250 * platformScale, height: 25 * platformScale }, // Сделаны выше
+                    { x: 600, y: canvas.height - 200 * platformScale, width: 200 * platformScale, height: 25 * platformScale } // Сделаны выше
                 );
-                if (level >= 2) platforms.push({ x: 400, y: canvas.height - 350 * platformScale, width: 200 * platformScale, height: 25 * platformScale });
-                if (level >= 3) platforms.push({ x: 200, y: canvas.height - 450 * platformScale, width: 120 * platformScale, height: 25 * platformScale }, { x: 650, y: canvas.height - 400 * platformScale, width: 120 * platformScale, height: 25 * platformScale });
-                if (level >= 4) platforms.push({ x: 300, y: canvas.height - 500 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 750, y: canvas.height - 450 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
-                if (level >= 5) platforms.push({ x: 100, y: canvas.height - 300 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 500, y: canvas.height - 300 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
-                if (level >= 6) platforms.push({ x: 800, y: canvas.height - 320 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 300, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
+                if (level >= 2) platforms.push({ x: 400, y: canvas.height - 300 * platformScale, width: 200 * platformScale, height: 25 * platformScale });
+                if (level >= 3) platforms.push({ x: 200, y: canvas.height - 400 * platformScale, width: 120 * platformScale, height: 25 * platformScale }, { x: 650, y: canvas.height - 350 * platformScale, width: 120 * platformScale, height: 25 * platformScale });
+                if (level >= 4) platforms.push({ x: 300, y: canvas.height - 450 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 750, y: canvas.height - 400 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
+                if (level >= 5) platforms.push({ x: 100, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 500, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
+                if (level >= 6) platforms.push({ x: 800, y: canvas.height - 270 * platformScale, width: 150 * platformScale, height: 25 * platformScale }, { x: 300, y: canvas.height - 200 * platformScale, width: 150 * platformScale, height: 25 * platformScale });
                 if (level === 3 || level === 5) spawnPowerup();
             }
 
