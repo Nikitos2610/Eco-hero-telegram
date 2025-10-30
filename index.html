@@ -1,1317 +1,393 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Эко-Герой: Охота за Энергией</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Reels - Retro Slot Machine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap');
-        body { margin: 0; padding: 0; overflow: hidden; background: #e0f7fa; font-family: 'Inter', Arial, sans-serif; color: #333; }
-        #game-container { position: relative; width: 100vw; height: 100vh; margin: 0; border: none; overflow: hidden; background: #a5d6a7; }
-        canvas { display: block; width: 100%; height: calc(100% - 80px); }
-        #score { position: absolute; top: 1vw; left: 1vw; font-size: 3vw; color: #fff; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.6); padding: 0.5vw 1vw; border-radius: 1vw; font-weight: 600; }
-        #level { position: absolute; top: 1vw; right: 1vw; font-size: 3vw; color: #fff; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.6); padding: 0.5vw 1vw; border-radius: 1vw; font-weight: 600; }
-        #health-bar { position: absolute; top: 5vw; left: 1vw; width: 25vw; height: 2.5vw; background: #ddd; border: 0.3vw solid #000; border-radius: 1.2vw; }
-        #health-fill { height: 100%; background: linear-gradient(to right, red, yellow, green); border-radius: 1vw; transition: width 0.3s; }
-        #health-text { position: absolute; top: 5vw; left: 1vw; width: 25vw; text-align: center; font-size: 1.8vw; color: #000; font-weight: 600; }
-        #quiz { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); padding: 2vw; border-radius: 2vw; display: none; text-align: center; z-index: 10; font-size: 2vw; border: 0.1vw solid rgba(255, 255, 255, 0.2); width: 80%; max-width: 40vw; }
-        #quiz.final #skip-quiz { display: none; }
-        #quiz h2 { background: linear-gradient(45deg, #4caf50, #2196f3); -webkit-background-clip: text; background-clip: text; color: #333; animation: pulse 1.5s infinite; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); margin-top: 0; font-size: 2.5vw; }
-        #quiz p { color: #333; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); font-size: 2vw; }
-        #quiz button { margin: 1vw; padding: 1vw 2vw; background: linear-gradient(45deg, #4caf50, #2196f3); color: white; border: none; border-radius: 1vw; cursor: pointer; font-size: 1.6vw; font-weight: 600; transition: transform 0.2s, opacity 0.3s; opacity: 0; }
-        #quiz button.show { opacity: 1; animation: fadeIn 0.3s ease-in; }
-        #quiz button.clicked { transform: scale(1.1); }
-        #quiz button:disabled { opacity: 0.5; cursor: not-allowed; }
-        #quiz-timer { width: 70%; margin: 1vw auto; height: 0.8vw; background: #ddd; border: 0.2vw solid #000; border-radius: 0.5vw; animation: timerPulse 1s infinite; }
-        #quiz-timer.warning #quiz-timer-fill { background: #f44336; }
-        #quiz-timer-fill { height: 100%; background: linear-gradient(to right, #2196f3, #4caf50); border-radius: 0.3vw; transition: width 0.1s; }
-        #quiz-timer-text { font-size: 1.2vw; color: #333; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); margin: 0.5vw 0; }
-        #end-screen, #win-screen, #pause-screen, #intro-screen { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); 
-            padding: 2vw; border-radius: 2vw; display: none; text-align: center; 
-            z-index: 10; font-size: 2vw; color: #333; border: 0.1vw solid rgba(255, 255, 255, 0.2); 
-            width: 80%; max-width: 40vw; 
+        body {
+            background: linear-gradient(45deg, #1a1a1a, #2c003e, #1a1a1a, #2c003e);
+            background-size: 400%;
+            color: #fff;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            animation: gradient 15s ease infinite;
         }
-        #end-screen h2, #win-screen h2, #pause-screen h2, #intro-screen h2, 
-        #end-screen p, #win-screen p, #pause-screen p, #intro-screen p, 
-        #win-screen ul { 
-            background: linear-gradient(45deg, #4caf50, #2196f3); 
-            -webkit-background-clip: text; background-clip: text; 
-            color: #333; animation: pulse 1.5s infinite; 
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.7); 
-            font-size: 2.5vw; 
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        #end-screen button, #win-screen button, #pause-screen button, #intro-screen button { 
-            margin-top: 2vw; padding: 1.5vw 3vw; font-size: 2vw; font-weight: 700; 
-            color: #fff; background: linear-gradient(45deg, #00d4ff, #ff4081); 
-            border: none; border-radius: 1.2vw; 
-            box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.5), 0 0 3vw rgba(255, 64, 129, 0.3); 
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.3s, background 0.3s; 
-            animation: neonPulse 2s infinite ease-in-out; 
+
+        .casino-container {
+            text-align: center;
+            padding: 20px;
+            background: #000;
+            border: 5px solid #ff00ff;
+            box-shadow: 0 0 20px #00ffff;
+            border-radius: 10px;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
         }
-        #end-screen button:hover, #win-screen button:hover, #pause-screen button:hover, #intro-screen button:hover { 
-            transform: scale(1.1); 
-            box-shadow: 0 0 2.5vw rgba(0, 212, 255, 0.7), 0 0 5vw rgba(255, 64, 129, 0.5); 
-            background: linear-gradient(45deg, #ff4081, #00d4ff); 
+
+        h1 {
+            font-size: 24px;
+            color: #ff69b4;
+            text-shadow: 0 0 10px #00ffff;
+            margin-bottom: 20px;
         }
-        #touch-controls { 
-            display: flex; position: fixed; bottom: 1vw; left: 50%; transform: translateX(-50%); 
-            z-index: 20; margin: 0 auto; width: fit-content; justify-content: center; gap: 12vw; 
+
+        .balance, .jackpot {
+            font-size: 18px;
+            color: #ffd700;
+            margin-bottom: 10px;
         }
-        #touch-controls button { 
-            padding: 2vw; font-size: 2.5vw; background: linear-gradient(45deg, #4caf50, #2196f3); 
-            color: white; border: none; border-radius: 1.2vw; width: 6vw; height: 6vw; 
-            display: flex; align-items: center; justify-content: center; touch-action: manipulation; 
-            box-shadow: 0 0 1vw rgba(0,0,0,0.3); transition: transform 0.2s, box-shadow 0.2s; 
-            user-select: none; 
+
+        .slot-machine {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        #touch-controls button:active { 
-            transform: scale(0.9); box-shadow: 0 0 1.5vw rgba(0,0,0,0.5); 
+
+        .reel {
+            width: 80px;
+            height: 80px;
+            background: #222;
+            border: 3px solid #00ffff;
+            border-radius: 10px;
+            font-size: 30px;
+            line-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px #ff00ff;
+            overflow: hidden;
         }
-        @media (max-width: 600px) {
-            #score, #level { font-size: 4vw; padding: 1vw; }
-            #health-bar { width: 30vw; height: 3vw; top: 6vw; }
-            #health-text { width: 30vw; font-size: 2vw; top: 6vw; }
-            #quiz, #end-screen, #win-screen, #pause-screen, #intro-screen { 
-                font-size: 3.5vw; padding: 2vw; max-width: 90vw; 
-            }
-            #quiz h2, #end-screen h2, #win-screen h2, #pause-screen h2, #intro-screen h2 { font-size: 4vw; }
-            #quiz p, #end-screen p, #win-screen p, #pause-screen p, #intro-screen p { font-size: 3.5vw; }
-            #quiz button { font-size: 2.5vw; padding: 1.5vw 2.5vw; }
-            #quiz-timer { height: 1vw; }
-            #quiz-timer-text { font-size: 2vw; }
-            #end-screen button, #win-screen button, #pause-screen button, #intro-screen button { 
-                font-size: 3vw; padding: 2vw 4vw; 
-            }
-            #touch-controls { gap: 15vw; }
-            #touch-controls button { width: 12vw; height: 12vw; font-size: 4vw; }
-            canvas { height: calc(100% - 15vw); }
+
+        .win-flash {
+            animation: flash 0.5s ease-in-out 3;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        @keyframes scaleIn { from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-        @keyframes timerPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        @keyframes neonPulse {
-            0%, 100% { box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.5), 0 0 3vw rgba(255, 64, 129, 0.3); }
-            50% { box-shadow: 0 0 2vw rgba(0, 212, 255, 0.7), 0 0 4vw rgba(255, 64, 129, 0.4); }
+
+        @keyframes flash {
+            0% { box-shadow: 0 0 10px #ff00ff; }
+            50% { box-shadow: 0 0 20px #ffd700; }
+            100% { box-shadow: 0 0 10px #ff00ff; }
         }
-        #message { 
-            position: absolute; top: 15vw; left: 50%; transform: translateX(-50%); 
-            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); 
-            padding: 1.5vw; border-radius: 2vw; display: none; font-size: 2.5vw; 
-            z-index: 15; color: #333; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); 
-            animation: pulse 1.5s infinite; border: 0.1vw solid rgba(255, 255, 255, 0.2); 
+
+        .shake {
+            animation: shake 0.3s ease-in-out;
         }
-        #error { 
-            position: absolute; top: 8vw; left: 1vw; color: #d32f2f; font-size: 2vw; 
-            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); 
-            padding: 1vw; border-radius: 2vw; text-shadow: 1px 1px 2px rgba(0,0,0,0.7); 
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .spin-button, .bonus-button, .daily-bonus {
+            background: #ff4500;
+            color: #fff;
+            border: 3px solid #ffd700;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ffff;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .spin-button:disabled, .bonus-button:disabled, .daily-bonus:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .spin-button:hover:not(:disabled), .bonus-button:hover:not(:disabled), .daily-bonus:hover:not(:disabled) {
+            background: #ff69b4;
+            box-shadow: 0 0 15px #ffd700;
+        }
+
+        .result {
+            font-size: 16px;
+            color: #00ff00;
+            margin-top: 20px;
+            text-shadow: 0 0 5px #ff00ff;
+            min-height: 20px;
+        }
+
+        .spinning {
+            animation: spin 0.1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(360deg); }
+        }
+
+        .bonus-game {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .bonus-game.active {
+            display: block;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
         }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="canvas"></canvas>
-        <div id="score">Очки: 0</div>
-        <div id="level">Уровень: 1</div>
-        <div id="health-bar"><div id="health-fill" style="width: 100%;"></div></div>
-        <div id="health-text">Энергия: 100</div>
-        <div id="quiz">
-            <h2 id="quiz-title">Викторина по энергосбережению!</h2>
-            <div id="quiz-timer"><div id="quiz-timer-fill" style="width: 100%;"></div></div>
-            <span id="quiz-timer-text">Осталось: 15 сек</span>
-            <p id="question"></p>
-            <button id="option1"></button>
-            <button id="option2"></button>
-            <button id="option3"></button>
-            <button id="skip-quiz">Пропустить (-15 энергии)</button>
+    <canvas id="confetti-canvas"></canvas>
+    <div class="casino-container">
+        <h1>🎰 Neon Reels 🎰</h1>
+        <div class="balance">💰 Balance: <span id="balance">1000</span> coins</div>
+        <div class="jackpot">🎯 Jackpot: <span id="jackpot">1000</span> coins</div>
+        <div class="slot-machine">
+            <div class="reel" id="reel1">🍒</div>
+            <div class="reel" id="reel2">🔔</div>
+            <div class="reel" id="reel3">💎</div>
         </div>
-        <div id="end-screen">
-            <h2>Игра окончена!</h2>
-            <p>Ваши очки: <span id="final-score"></span></p>
-            <p>Рекорд: <span id="high-score"></span></p>
-            <p id="win-message">Попробуйте набрать 1000 очков и пройти финальную викторину!</p>
-            <button onclick="restartGame()">Играть заново</button>
+        <button id="spin-button" class="spin-button">Spin (10 coins)</button>
+        <button id="daily-bonus" class="daily-bonus">Daily Bonus</button>
+        <div id="bonus-game" class="bonus-game">
+            <p>🎴 Guess the Card Color!</p>
+            <button class="bonus-button" onclick="guessCard('red')">Red</button>
+            <button class="bonus-button" onclick="guessCard('black')">Black</button>
         </div>
-        <div id="win-screen">
-            <h2>Поздравляем! Вы спасли планету!</h2>
-            <p>Благодаря вам энергия сохранена, и мир стал зеленее!</p>
-            <ul>
-                <li>Выключайте свет, когда выходите из комнаты.</li>
-                <li>Используйте светодиодные лампочки.</li>
-                <li>Отключайте устройства от розетки, когда не используете.</li>
-            </ul>
-            <button onclick="restartGame()">Играть заново</button>
-        </div>
-        <div id="pause-screen">
-            <h2>ИГРА НА ПАУЗЕ</h2>
-            <p>Нажми P или кнопку ниже, чтобы продолжить</p>
-            <button onclick="togglePause()">Продолжить</button>
-        </div>
-        <div id="intro-screen">
-            <h2>Добро пожаловать, Эко-Герой!</h2>
-            <p>Эко-Герой, спасай энергию! Собирай батарейки (жёлтые монеты), избегай утечек (красные батарейки) и отвечай на вопросы. Прыгай (пробел), двигайся (стрелки), побеждай!</p>
-            <button onclick="startGame()">Начать игру</button>
-        </div>
-        <div id="message"></div>
-        <div id="error"></div>
+        <div id="result" class="result"></div>
     </div>
-    <div id="touch-controls">
-        <button id="touch-jump">↑</button>
-        <button id="touch-left">←</button>
-        <button id="touch-right">→</button>
-    </div>
-
-    <script type="text/javascript">
-        try {
-            // Инициализация Telegram Mini Apps
-            if (window.Telegram && Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                Telegram.WebApp.expand();
-                Telegram.WebApp.onEvent('backButtonClicked', () => { restartGame(); });
-                Telegram.WebApp.onEvent('viewportChanged', () => {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight - 80;
-                    bgCanvas.width = canvas.width;
-                    bgCanvas.height = canvas.height;
-                    staticBgCanvas.width = canvas.width;
-                    staticBgCanvas.height = canvas.height;
-                    initStaticBackground();
-                    drawBackground();
-                });
-            }
-
-            // Константы
-            const MAX_LEVEL = 6;
-            const MAX_COINS = 8;
-            const MAX_MONSTERS = 7;
-            const MAX_POWERUPS = 3;
-            const QUIZ_DURATION = 15000;
-            const GRAVITY = 0.4;
-            const COIN_LIFETIME = 800;
-            const MONSTER_LIFETIME_MIN = 900;
-            const MONSTER_LIFETIME_MAX = 1500;
-            const BOSS_LIFETIME = { 4: 1500, 5: 1200 };
-            const SHIELD_DURATION = 350;
-            const FLASH_DURATION = 18;
-            const MESSAGE_DURATION = 180;
-            const PLAYER_SCALE_DURATION = 30;
-            const TEACHER_LIFETIME = 900;
-            const TEACHER_LIFETIME_QUIZ_MIN = 300;
-            const COLLISION_TOLERANCE = 15;
-
-            // Определяем масштабы
-            const isMobile = window.innerWidth < 600;
-            const objectScale = isMobile ? 0.7 : 1;
-            const platformScale = isMobile ? 0.5 : 0.8;
-
-            // Инициализация DOM-элементов
-            const canvas = document.getElementById('canvas');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 80;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                showError('Ваш браузер не поддерживает Canvas. Попробуйте другой браузер.');
-                throw new Error('Не удалось инициализировать Canvas');
-            }
-            const bgCanvas = document.createElement('canvas');
-            bgCanvas.width = canvas.width;
-            bgCanvas.height = canvas.height;
-            const bgCtx = bgCanvas.getContext('2d');
-            const staticBgCanvas = document.createElement('canvas');
-            staticBgCanvas.width = canvas.width;
-            staticBgCanvas.height = canvas.height;
-            const staticBgCtx = staticBgCanvas.getContext('2d');
-            const scoreEl = document.getElementById('score');
-            const levelEl = document.getElementById('level');
-            const healthFill = document.getElementById('health-fill');
-            const healthText = document.getElementById('health-text');
-            const quizEl = document.getElementById('quiz');
-            const quizTitle = document.getElementById('quiz-title');
-            const questionEl = document.getElementById('question');
-            const option1 = document.getElementById('option1');
-            const option2 = document.getElementById('option2');
-            const option3 = document.getElementById('option3');
-            const skipQuiz = document.getElementById('skip-quiz');
-            const quizTimerFill = document.getElementById('quiz-timer-fill');
-            const quizTimerText = document.getElementById('quiz-timer-text');
-            const endScreen = document.getElementById('end-screen');
-            const finalScoreEl = document.getElementById('final-score');
-            const highScoreEl = document.getElementById('high-score');
-            const winMessageEl = document.getElementById('win-message');
-            const winScreen = document.getElementById('win-screen');
-            const pauseScreen = document.getElementById('pause-screen');
-            const introScreen = document.getElementById('intro-screen');
-            const messageEl = document.getElementById('message');
-            const errorEl = document.getElementById('error');
-            const touchLeft = document.getElementById('touch-left');
-            const touchRight = document.getElementById('touch-right');
-            const touchJump = document.getElementById('touch-jump');
-
-            // Инициализация переменных
-            let score = 0, lastScore = -1;
-            let level = 1, lastLevel = -1;
-            let health = 100, lastHealth = -1;
-            let gameOver = false;
-            let gameStarted = false;
-            let quizActive = false;
-            let finalQuiz = false;
-            let quizTriggered = false;
-            let shieldActive = false;
-            let shieldTime = 0;
-            let messageTimer = 0;
-            let flashTimer = 0;
-            let flashType = null;
-            let flashQueue = [];
-            let currentQuiz = null;
-            let quizTimer = 0;
-            let quizCount = 0;
-            let teacher = null;
-            let player = { x: 50, y: canvas.height - 110 * objectScale, width: 60 * objectScale, height: 60 * objectScale, vy: 0, jumping: false, scale: 1, scaleTimer: 0 };
-            let keys = {};
-            let coins = [];
-            let monsters = [];
-            let powerups = [];
-            let boss = null;
-            let frameCount = 0;
-            let cloudX = 0;
-            let grassWave = 0;
-            let lastFrameTime = performance.now();
-            let lastTime = performance.now();
-            let isFocused = true;
-            let paused = false;
-            let usedQuizIndices = [];
-            let startAnimationTimer = 0;
-
-            const platforms = [
-                { x: 0, y: canvas.height - 50 * platformScale, width: canvas.width, height: 50 * platformScale },
-                { x: 250, y: canvas.height - 100 * platformScale, width: 200 * platformScale, height: 25 * platformScale },
-                { x: 600, y: canvas.height - 150 * platformScale, width: 200 * platformScale, height: 25 * platformScale }
-            ];
-
-            const quizzes = [
-                { question: 'Что лучше сделать с компьютером на ночь?', options: ['Оставить включенным', 'Выключить полностью', 'Оставить в спящем режиме'], correct: 1, fact: 'Выключение экономит энергию!' },
-                { question: 'Какая лампочка сберегает энергию?', options: ['Обычная накаливания', 'Светодиодная', 'Галогенная'], correct: 1, fact: 'Светодиодные лампочки тратят меньше электричества!' },
-                { question: 'Нужно ли выключать свет, выходя из комнаты?', options: ['Нет, это не важно', 'Да, всегда', 'Только если надолго'], correct: 1, fact: 'Выключение света экономит до 10% энергии дома!' },
-                { question: 'Что экономит воду и энергию?', options: ['Душ вместо ванны', 'Мыть посуду под краном', 'Оставить кран открытым'], correct: 0, fact: 'Душ тратит меньше воды, а значит и энергии на нагрев!' },
-                { question: 'Какой режим стиральной машины сберегает энергию?', options: ['Горячая вода', 'Эко-режим', 'Быстрая стирка'], correct: 1, fact: 'Эко-режим использует меньше энергии и воды!' },
-                { question: 'Нужно ли отключать зарядку от розетки?', options: ['Нет, она не тратит энергию', 'Да, она потребляет в режиме ожидания', 'Только для телефонов'], correct: 1, fact: 'Зарядки в режиме ожидания потребляют энергию!' },
-                { question: 'Какой прибор экономит энергию?', options: ['Старый холодильник', 'Энергоэффективный холодильник', 'Любой холодильник'], correct: 1, fact: 'Энергоэффективные приборы тратят меньше электричества!' },
-                { question: 'Можно ли заряжать телефон всю ночь?', options: ['Да, это безопасно', 'Нет, это тратит энергию', 'Только новые телефоны'], correct: 1, fact: 'Зарядка всю ночь тратит лишнюю энергию!' },
-                { question: 'Как экономить энергию в школе?', options: ['Оставить проектор включенным', 'Выключать технику после урока', 'Использовать больше ламп'], correct: 1, fact: 'Выключение техники после уроков экономит энергию!' },
-                { question: 'Что лучше для планеты?', options: ['Одноразовые батарейки', 'Перезаряжаемые аккумуляторы', 'Оставить без батареек'], correct: 1, fact: 'Перезаряжаемые аккумуляторы снижают отходы и энергопотребление!' }
-            ];
-
-            const finalQuizQuestion = {
-                question: 'Как лучше всего экономить энергию дома?',
-                options: ['Оставлять свет включенным', 'Выключать свет и устройства', 'Использовать больше ламп'],
-                correct: 1,
-                fact: 'Выключайте свет и устройства — это простой способ сберечь энергию!'
-            };
-
-            // Обработка XLSX файлов
-            var gk_isXlsx = false;
-            var gk_xlsxFileLookup = {};
-            var gk_fileData = {};
-            function filledCell(cell) {
-                return cell !== '' && cell != null;
-            }
-            function loadFileData(filename) {
-                if (typeof XLSX === 'undefined') {
-                    console.error('Библиотека XLSX не загружена');
-                    showError('Ошибка загрузки данных. Попробуйте перезагрузить страницу.');
-                    return "";
-                }
-                if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-                    try {
-                        var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                        var firstSheetName = workbook.SheetNames[0];
-                        var worksheet = workbook.Sheets[firstSheetName];
-                        var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                        var filteredData = jsonData.filter(row => row.some(filledCell));
-                        var headerRowIndex = filteredData.findIndex((row, index) =>
-                            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                        );
-                        if (headerRowIndex === -1 || headerRowIndex > 25) {
-                            headerRowIndex = 0;
-                        }
-                        var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-                        csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                        return csv;
-                    } catch (e) {
-                        console.error(e);
-                        showError('Ошибка обработки данных XLSX.');
-                        return "";
-                    }
-                }
-                return gk_fileData[filename] || "";
-            }
-
-            function isOverlapping(obj1, obj2) {
-                return obj1.x < obj2.x + obj2.width &&
-                       obj1.x + obj1.width > obj2.x &&
-                       obj1.y < obj2.y + obj2.height &&
-                       obj1.y + obj1.height > obj2.y;
-            }
-
-            function generateSafePosition(size = 20 * objectScale, restrictY = false, preferPlatform = false) {
-                let attempts = 0;
-                let x, y;
-                const maxY = canvas.height - 150 * platformScale;
-                if (preferPlatform && Math.random() < 0.7 && platforms.length > 1) {
-                    const platform = platforms[Math.floor(Math.random() * (platforms.length - 1)) + 1];
-                    x = platform.x + Math.random() * (platform.width - size);
-                    y = platform.y - size;
-                } else {
-                    do {
-                        attempts++;
-                        x = Math.random() * (canvas.width - size * 2) + size;
-                        if (restrictY) {
-                            y = level === 3 && Math.random() < 0.2 ? canvas.height - 250 * platformScale + Math.random() * 50 * platformScale : canvas.height - 90 * platformScale;
-                        } else {
-                            y = Math.random() * (maxY - 70 * platformScale) + 70 * platformScale;
-                        }
-                        if (attempts > 100) {
-                            console.warn('Не удалось найти безопасную позицию для объекта');
-                            return { x: Math.max(100, canvas.width - size * 2), y: platforms[0].y - size };
-                        }
-                    } while (isOverlapping({x, y, width: size, height: size}, {x: player.x, y: player.y, width: player.width, height: player.height}) || platforms.some(p => isOverlapping({x, y, width: size, height: size}, p)));
-                }
-                return { x, y };
-            }
-
-            function initStaticBackground() {
-                const grad = staticBgCtx.createLinearGradient(0, 0, 0, staticBgCanvas.height);
-                grad.addColorStop(0, '#81d4fa');
-                grad.addColorStop(1, '#4caf50');
-                staticBgCtx.fillStyle = grad;
-                staticBgCtx.fillRect(0, 0, staticBgCanvas.width, staticBgCanvas.height);
-            }
-
-            function drawBackground() {
-                bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-                bgCtx.drawImage(staticBgCanvas, 0, 0);
-                if (!quizActive) {
-                    bgCtx.fillStyle = '#fff';
-                    bgCtx.beginPath();
-                    bgCtx.arc(cloudX % canvas.width, 50 * objectScale, 50 * objectScale, 0, Math.PI * 2);
-                    bgCtx.arc((cloudX + 80 * objectScale) % canvas.width, 60 * objectScale, 40 * objectScale, 0, Math.PI * 2);
-                    bgCtx.arc((cloudX + 150 * objectScale) % canvas.width, 40 * objectScale, 60 * objectScale, 0, Math.PI * 2);
-                    bgCtx.fill();
-                    cloudX += 0.5;
-
-                    bgCtx.fillStyle = '#228b22';
-                    bgCtx.beginPath();
-                    bgCtx.moveTo(0, bgCanvas.height - 50 * platformScale);
-                    for (let i = 0; i <= bgCanvas.width; i += 100 * platformScale) {
-                        bgCtx.quadraticCurveTo(i + 50 * platformScale, bgCanvas.height - 100 * platformScale + Math.sin(i / 50 + grassWave) * 20 * platformScale, i + 100 * platformScale, bgCanvas.height - 50 * platformScale);
-                    }
-                    bgCtx.lineTo(bgCanvas.width, bgCanvas.height);
-                    bgCtx.lineTo(0, bgCanvas.height);
-                    bgCtx.fill();
-                    grassWave += 0.05;
-
-                    bgCtx.fillStyle = '#2196f3';
-                    bgCtx.fillRect(100 * platformScale, bgCanvas.height - 80 * platformScale, 120 * platformScale, 40 * platformScale);
-                }
-            }
-
-            function drawSolarPanels() {
-                ctx.save();
-                ctx.fillStyle = '#2196f3';
-                ctx.fillRect(100 * platformScale, canvas.height - 80 * platformScale, 120 * platformScale, 40 * platformScale);
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 1 * platformScale;
-                for (let j = 0; j < 6; j++) {
-                    for (let k = 0; k < 2; k++) {
-                        const alpha = 0.5 + 0.5 * Math.sin(frameCount * 0.05 + (j + k * 6) * 0.5);
-                        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-                        ctx.fillRect(100 * platformScale + j * 20 * platformScale, canvas.height - 80 * platformScale + k * 20 * platformScale, 20 * platformScale, 20 * platformScale);
-                        ctx.strokeRect(100 * platformScale + j * 20 * platformScale, canvas.height - 80 * platformScale + k * 20 * platformScale, 20 * platformScale, 20 * platformScale);
-                    }
-                }
-                ctx.restore();
-            }
-
-            function drawWindmill() {
-                ctx.save();
-                ctx.translate(canvas.width - 150 * platformScale, canvas.height - 350 * platformScale);
-                ctx.rotate(frameCount * 0.05);
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(-10 * platformScale, -80 * platformScale, 20 * platformScale, 160 * platformScale);
-                ctx.rotate(Math.PI * 2 / 3);
-                ctx.fillRect(-10 * platformScale, -80 * platformScale, 20 * platformScale, 160 * platformScale);
-                ctx.rotate(Math.PI * 2 / 3);
-                ctx.fillRect(-10 * platformScale, -80 * platformScale, 20 * platformScale, 160 * platformScale);
-                ctx.restore();
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(canvas.width - 150 * platformScale, canvas.height - 350 * platformScale, 10 * platformScale, 300 * platformScale);
-            }
-
-            function drawPlayer() {
-                ctx.save();
-                ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
-                ctx.scale(player.scale, player.scale);
-                ctx.translate(-player.width / 2, -player.height / 2);
-                ctx.shadowBlur = 5 * objectScale;
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                ctx.fillStyle = shieldActive ? '#2196f3' : '#ff9800';
-                ctx.beginPath();
-                ctx.arc(30 * objectScale, 30 * objectScale, 30 * objectScale, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#ffd700';
-                ctx.beginPath();
-                ctx.arc(30 * objectScale, 30 * objectScale, 18 * objectScale, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2 * objectScale;
-                ctx.beginPath();
-                ctx.moveTo(18 * objectScale, 30 * objectScale);
-                ctx.lineTo(42 * objectScale, 30 * objectScale);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            function drawTeacher() {
-                if (!teacher) return;
-                ctx.save();
-                ctx.shadowBlur = 5 * objectScale;
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                ctx.fillStyle = '#4caf50';
-                ctx.beginPath();
-                ctx.arc(teacher.x + 25 * objectScale, teacher.y + 25 * objectScale, 25 * objectScale, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#fff';
-                ctx.beginPath();
-                ctx.arc(teacher.x + 20 * objectScale, teacher.y + 20 * objectScale, 5 * objectScale, 0, Math.PI * 2);
-                ctx.arc(teacher.x + 30 * objectScale, teacher.y + 20 * objectScale, 5 * objectScale, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2 * objectScale;
-                ctx.beginPath();
-                ctx.arc(teacher.x + 25 * objectScale, teacher.y + 30 * objectScale, 10 * objectScale, Math.PI * 0.25, Math.PI * 0.75);
-                ctx.stroke();
-                ctx.font = `${12 * objectScale}px Inter`;
-                ctx.fillStyle = '#fff';
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 1 * objectScale;
-                ctx.strokeText('Энерго-Учитель', teacher.x - 10 * objectScale, teacher.y + 60 * objectScale);
-                ctx.fillText('Энерго-Учитель', teacher.x - 10 * objectScale, teacher.y + 60 * objectScale);
-                ctx.restore();
-                if (quizActive) {
-                    teacher.lifetime = Math.max(teacher.lifetime - 1, TEACHER_LIFETIME_QUIZ_MIN);
-                } else {
-                    teacher.lifetime--;
-                }
-                if (teacher.lifetime <= 0) teacher = null;
-            }
-
-            function drawPlatforms() {
-                ctx.save();
-                ctx.shadowBlur = 5 * platformScale;
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                ctx.fillStyle = '#795548';
-                platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
-                ctx.restore();
-            }
-
-            function drawCoins() {
-                ctx.save();
-                ctx.shadowBlur = 5 * objectScale;
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                coins.forEach(c => {
-                    c.lifetime--;
-                    if (c.lifetime <= 0) {
-                        spawnCoin();
-                        return false;
-                    }
-                    ctx.save();
-                    ctx.translate(c.x, c.y);
-                    ctx.rotate(frameCount * 0.1);
-                    ctx.fillStyle = '#ffd700';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 15 * objectScale, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 2 * objectScale;
-                    ctx.beginPath();
-                    ctx.moveTo(-5 * objectScale, 0);
-                    ctx.lineTo(5 * objectScale, 0);
-                    ctx.moveTo(0, -5 * objectScale);
-                    ctx.lineTo(0, 5 * objectScale);
-                    ctx.stroke();
-                    ctx.restore();
-                });
-                ctx.restore();
-            }
-
-            function drawMonsters() {
-                ctx.save();
-                ctx.shadowBlur = 5 * objectScale;
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                monsters.forEach(m => {
-                    ctx.fillStyle = '#f44336';
-                    ctx.beginPath();
-                    ctx.moveTo(m.x + 20 * objectScale, m.y);
-                    ctx.lineTo(m.x + 40 * objectScale, m.y);
-                    ctx.lineTo(m.x + 40 * objectScale, m.y + 40 * objectScale);
-                    ctx.lineTo(m.x + 20 * objectScale, m.y + 40 * objectScale);
-                    ctx.lineTo(m.x, m.y + 20 * objectScale);
-                    ctx.lineTo(m.x + 20 * objectScale, m.y);
-                    ctx.fill();
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 3 * objectScale;
-                    ctx.beginPath();
-                    ctx.moveTo(m.x + 10 * objectScale, m.y + 30 * objectScale);
-                    ctx.lineTo(m.x + 20 * objectScale, m.y + 10 * objectScale);
-                    ctx.lineTo(m.x + 30 * objectScale, m.y + 30 * objectScale);
-                    ctx.stroke();
-                });
-                ctx.restore();
-            }
-
-            function drawPowerups() {
-                ctx.save();
-                ctx.shadowBlur = 5 * objectScale;
-                ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                powerups.forEach(p => {
-                    ctx.fillStyle = '#2196f3';
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, 15 * objectScale, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.strokeStyle = '#ffd700';
-                    ctx.lineWidth = 2 * objectScale;
-                    for (let i = 0; i < 8; i++) {
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p.x + Math.cos(i * Math.PI / 4) * 20 * objectScale, p.y + Math.sin(i * Math.PI / 4) * 20 * objectScale);
-                        ctx.stroke();
-                    }
-                });
-                ctx.restore();
-            }
-
-            function drawBoss() {
-                if (boss) {
-                    ctx.save();
-                    ctx.shadowBlur = 5 * objectScale;
-                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                    ctx.fillStyle = '#666';
-                    ctx.beginPath();
-                    ctx.moveTo(boss.x + 40 * objectScale, boss.y);
-                    ctx.lineTo(boss.x + 80 * objectScale, boss.y);
-                    ctx.lineTo(boss.x + 80 * objectScale, boss.y + 80 * objectScale);
-                    ctx.lineTo(boss.x + 40 * objectScale, boss.y + 80 * objectScale);
-                    ctx.lineTo(boss.x, boss.y + 40 * objectScale);
-                    ctx.lineTo(boss.x + 40 * objectScale, boss.y);
-                    ctx.fill();
-                    ctx.strokeStyle = '#000';
-                    ctx.lineWidth = 4 * objectScale;
-                    ctx.beginPath();
-                    ctx.moveTo(boss.x + 20 * objectScale, boss.y + 60 * objectScale);
-                    ctx.lineTo(boss.x + 40 * objectScale, boss.y + 20 * objectScale);
-                    ctx.lineTo(boss.x + 60 * objectScale, boss.y + 60 * objectScale);
-                    ctx.stroke();
-                    ctx.restore();
-                }
-            }
-
-            function escapeHTML(str) {
-                return str.replace(/[&<>"']/g, match => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#39;'
-                }[match]));
-            }
-
-            function showError(message) {
-                errorEl.textContent = escapeHTML(message);
-                setTimeout(() => errorEl.textContent = '', 5000);
-            }
-
-            function showMessage(text, isCorrect) {
-                messageEl.textContent = escapeHTML(text);
-                messageEl.style.background = isCorrect ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)';
-                messageEl.style.display = 'block';
-                messageTimer = MESSAGE_DURATION;
-            }
-
-            function triggerFlash(type) {
-                flashQueue.push(type);
-                if (flashTimer <= 0) {
-                    flashType = flashQueue.shift();
-                    flashTimer = FLASH_DURATION;
-                }
-            }
-
-            function saveGame() {
-                try {
-                    localStorage.setItem('gameState', JSON.stringify({ score, level, health }));
-                } catch (e) {
-                    console.warn('Не удалось сохранить игру:', e);
-                    showMessage('Сохранение прогресса недоступно', false);
-                }
-            }
-
-            function update() {
-                if (!gameStarted || gameOver || !isFocused || paused || quizActive) return;
-
-                frameCount++;
-                lastFrameTime = performance.now();
-                if (shieldActive) {
-                    shieldTime--;
-                    if (shieldTime <= 0) shieldActive = false;
-                }
-                if (messageTimer > 0) {
-                    messageTimer--;
-                    if (messageTimer <= 0) messageEl.style.display = 'none';
-                }
-                if (player.scaleTimer > 0) {
-                    player.scaleTimer--;
-                    player.scale = Math.max(1, player.scale - 0.00667);
-                    if (player.scaleTimer <= 0) player.scale = 1;
-                }
-
-                coins = coins.filter(c => {
-                    c.lifetime--;
-                    if (c.lifetime <= 0) {
-                        spawnCoin();
-                        return false;
-                    }
-                    if (isOverlapping({x: player.x, y: player.y, width: player.width, height: player.height}, {x: c.x - 15 * objectScale, y: c.y - 15 * objectScale, width: 30 * objectScale, height: 30 * objectScale})) {
-                        score += level >= 3 ? 20 : 15;
-                        player.scale = 1.2;
-                        player.scaleTimer = PLAYER_SCALE_DURATION;
-                        triggerFlash('coin');
-                        return false;
-                    }
-                    return true;
-                });
-
-                monsters = monsters.filter(m => {
-                    m.lifetime--;
-                    if (m.lifetime <= 0) return false;
-                    if (!shieldActive && isOverlapping({x: player.x, y: player.y, width: player.width, height: player.height}, {x: m.x, y: m.y, width: 40 * objectScale, height: 40 * objectScale})) {
-                        health -= 10;
-                        triggerFlash('hit');
-                        if (health <= 0) gameOver = true;
-                        updateUI();
-                        return false;
-                    }
-                    return true;
-                });
-
-                powerups = powerups.filter(p => {
-                    if (isOverlapping({x: player.x, y: player.y, width: player.width, height: player.height}, {x: p.x - 15 * objectScale, y: p.y - 15 * objectScale, width: 30 * objectScale, height: 30 * objectScale})) {
-                        health = Math.min(100, health + 25);
-                        shieldActive = true;
-                        shieldTime = SHIELD_DURATION;
-                        triggerFlash('powerup');
-                        updateUI();
-                        return false;
-                    }
-                    return true;
-                });
-
-                if (boss && !shieldActive && isOverlapping({x: player.x, y: player.y, width: player.width, height: player.height}, {x: boss.x, y: boss.y, width: boss.width, height: boss.height})) {
-                    health -= level === 4 ? 15 : 20;
-                    boss.hits = (boss.hits || 0) + 1;
-                    triggerFlash('hit');
-                    if (boss.hits === 1) boss.dir *= 1.15;
-                    if (boss.hits === 2) {
-                        spawnMonster();
-                        spawnMonster();
-                    }
-                    if (health <= 0) gameOver = true;
-                    updateUI();
-                    if (boss.hits >= 3) {
-                        showMessage('Босс побеждён!', true);
-                        boss = null;
-                    }
-                }
-
-                player.vy += GRAVITY;
-                player.y += player.vy;
-                player.y = Math.max(0, Math.min(player.y, canvas.height - player.height));
-                if (player.y === canvas.height - player.height && player.vy >= 0) {
-                    player.vy = 0;
-                    player.jumping = false;
-                }
-                if (player.y === 0 && player.vy < 0) {
-                    player.vy = -player.vy * 0.5;
-                }
-                if (keys['ArrowLeft'] && player.x > 0) player.x -= 8 * objectScale;
-                if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += 8 * objectScale;
-                if (keys['Space'] && !player.jumping) {
-                    player.vy = -24 * objectScale;
-                    player.jumping = true;
-                }
-
-                platforms.forEach(p => {
-                    if (isOverlapping({ x: player.x, y: player.y, width: player.width, height: player.height }, p)) {
-                        if (player.vy > 0 && player.y + player.height > p.y && player.y + player.height < p.y + p.height + COLLISION_TOLERANCE && player.x + player.width > p.x && player.x < p.x + p.width) {
-                            player.y = p.y - player.height;
-                            player.vy = 0;
-                            player.jumping = false;
-                        }
-                    }
-                });
-
-                const monsterSpeed = level === 1 ? 2.5 : level === 2 ? 3.5 : level === 3 ? 4 : level === 4 ? 4.5 : level === 5 ? 5 : 5.5;
-                monsters.forEach(m => {
-                    m.x += m.dir * monsterSpeed;
-                    if (m.x < 0 || m.x > canvas.width - 40 * objectScale) m.dir *= -1;
-                    if (level >= 5 && Math.random() < 0.08) m.dir *= -1;
-                    m.vy += 0.3;
-                    m.y += m.vy;
-                    m.y = Math.max(0, Math.min(m.y, canvas.height - 40 * objectScale));
-                    platforms.forEach(p => {
-                        if (
-                            m.vy > 0 &&
-                            m.y + 40 * objectScale > p.y &&
-                            m.y + 40 * objectScale < p.y + p.height + COLLISION_TOLERANCE &&
-                            m.x + 40 * objectScale > p.x &&
-                            m.x < p.x + p.width
-                        ) {
-                            m.y = p.y - 40 * objectScale;
-                            m.vy = 0;
-                            if (level >= 3 && Math.random() < 0.03 / level) m.vy = -10;
-                        }
-                    });
-                    if (level >= 5 && Math.random() < 0.02) {
-                        if (Math.random() < 0.1) m.vy = -12;
-                    }
-                });
-
-                if (boss) {
-                    boss.x += boss.dir * (1.2 + level * 0.15);
-                    if (boss.x < 0 || boss.x > canvas.width - boss.width) boss.dir *= -1;
-                    boss.lifetime--;
-                    if (boss.lifetime <= 0) {
-                        showMessage('Босс отступил!', true);
-                        boss = null;
-                    }
-                    if (frameCount % (level === 4 ? 40 : 30) === 0) spawnMonster();
-                }
-
-                const coinProb = 0.008 / (1 + level * 0.15);
-                const monsterProb = 0.0025 * (1 + level * 0.3);
-                const powerupProb = 0.001 / (1 + level * 0.4);
-                const bossProb = level >= 4 ? 0.0015 * (1 + (level - 3) * 0.4) : 0;
-                if (Math.random() < coinProb) spawnCoin();
-                if (Math.random() < monsterProb && monsters.length < MAX_MONSTERS) spawnMonster();
-                if (Math.random() < powerupProb) spawnPowerup();
-                if (level >= 4 && !boss && Math.random() < bossProb) {
-                    const pos = generateSafePosition(80 * objectScale, level <= 3);
-                    if (pos) boss = { x: pos.x, y: pos.y, width: 80 * objectScale, height: 80 * objectScale, dir: Math.random() > 0.5 ? 1 : -1, lifetime: BOSS_LIFETIME[level] || 1200, hits: 0 };
-                }
-
-                const nextLevelThreshold = level === 1 ? 150 : level === 2 ? 300 : level === 3 ? 500 : level === 4 ? 700 : level === 5 ? 900 : 99999;
-                const quizThreshold = level === 1 ? 112 : level === 2 ? 225 : level === 3 ? 375 : level === 4 ? 525 : level === 5 ? 675 : 99999;
-                if (!quizTriggered && score >= quizThreshold && !finalQuiz && !quizActive && level < MAX_LEVEL) {
-                    quizTriggered = true;
-                    startQuiz();
-                }
-                if (score >= nextLevelThreshold && level < MAX_LEVEL) {
-                    level++;
-                    quizTriggered = false;
-                    updateLevel();
-                }
-
-                if (score >= 1000 && !finalQuiz && !quizActive) {
-                    finalQuiz = true;
-                    quizActive = true;
-                    quizTitle.textContent = 'Финальная викторина!';
-                    currentQuiz = finalQuizQuestion;
-                    questionEl.textContent = escapeHTML(currentQuiz.question);
-                    option1.textContent = escapeHTML(finalQuizQuestion.options[0]);
-                    option2.textContent = escapeHTML(finalQuizQuestion.options[1]);
-                    option3.textContent = escapeHTML(finalQuizQuestion.options[2]);
-                    quizEl.style.display = 'block';
-                    quizEl.classList.add('final');
-                    quizTimer = QUIZ_DURATION;
-                    quizTimerFill.style.width = '100%';
-                    quizTimerText.textContent = 'Осталось: 15 сек';
-                    quizTimerFill.parentElement.classList.remove('warning');
-                    const pos = generateSafePosition(50 * objectScale, level <= 3);
-                    if (pos) teacher = { x: pos.x, y: pos.y, lifetime: TEACHER_LIFETIME };
-                }
-
-                updateUI();
-            }
-
-            function updateUI() {
-                if (score !== lastScore) {
-                    scoreEl.textContent = `Очки: ${escapeHTML(score.toString())}`;
-                    lastScore = score;
-                }
-                if (level !== lastLevel) {
-                    levelEl.textContent = `Уровень: ${escapeHTML(level.toString())}`;
-                    lastLevel = level;
-                }
-                if (health !== lastHealth) {
-                    healthFill.style.width = `${health}%`;
-                    healthText.textContent = `Энергия: ${escapeHTML(health.toString())}`;
-                    lastHealth = health;
-                }
-            }
-
-            function render() {
-                if (!gameStarted || !ctx) return;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(bgCanvas, 0, 0);
-                if (quizActive) {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    drawTeacher();
-                    return;
-                }
-                drawSolarPanels();
-                drawPlatforms();
-                drawPlayer();
-                drawCoins();
-                drawMonsters();
-                drawPowerups();
-                drawBoss();
-                drawTeacher();
-                drawWindmill();
-                if (flashTimer > 0) {
-                    ctx.fillStyle = flashType === 'hit' ? 'rgba(255, 0, 0, 0.3)' : flashType === 'coin' ? 'rgba(0, 255, 0, 0.2)' : 'rgba(0, 0, 255, 0.2)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    flashTimer--;
-                    if (flashTimer <= 0 && flashQueue.length > 0) {
-                        flashType = flashQueue.shift();
-                        flashTimer = FLASH_DURATION;
-                    }
-                }
-                if (startAnimationTimer > 0) {
-                    player.scale = 1 + 0.2 * Math.sin(startAnimationTimer * 0.2);
-                    startAnimationTimer--;
-                }
-            }
-
-            function gameLoop(timestamp) {
-                if (!gameStarted) return;
-                if (!quizActive && !paused && timestamp - lastFrameTime > 10000 && endScreen.style.display !== 'block' && winScreen.style.display !== 'block') {
-                    restartGame();
-                    return;
-                }
-
-                if (messageTimer > 0) {
-                    messageTimer--;
-                    if (messageTimer <= 0) messageEl.style.display = 'none';
-                }
-
-                if (quizActive) {
-                    quizTimer -= 1000 / 60;
-                    quizTimer = Math.max(0, quizTimer);
-                    quizTimerFill.style.width = `${(quizTimer / QUIZ_DURATION) * 100}%`;
-                    quizTimerText.textContent = `Осталось: ${Math.ceil(quizTimer / 1000)} сек`;
-                    if (quizTimer <= 5000) {
-                        quizTimerFill.parentElement.classList.add('warning');
-                    } else {
-                        quizTimerFill.parentElement.classList.remove('warning');
-                    }
-                    if (quizTimer <= 0) {
-                        if (finalQuiz) {
-                            health -= 20;
-                            if (health <= 0) {
-                                gameOver = true;
-                                quizEl.style.display = 'none';
-                                quizActive = false;
-                                finalQuiz = false;
-                                showEndScreen();
-                            }
-                            showMessage(`Время вышло! Энергия -20. Попробуйте снова.`, false);
-                            updateUI();
-                            quizTimer = QUIZ_DURATION;
-                            quizTimerFill.style.width = '100%';
-                            quizTimerText.textContent = 'Осталось: 15 сек';
-                            quizTimerFill.parentElement.classList.remove('warning');
-                        } else {
-                            skipQuizFn();
-                        }
-                    }
-                    render();
-                } else {
-                    if (timestamp - lastTime > 1000 / 60) {
-                        frameCount++;
-                        update();
-                        render();
-                        lastTime = timestamp;
-                    }
-                }
-
-                if (gameOver) {
-                    showEndScreen();
-                }
-                requestAnimationFrame(gameLoop);
-            }
-
-            function spawnCoin() {
-                if (coins.length >= MAX_COINS) return;
-                const pos = generateSafePosition(15 * objectScale, false, level >= 3);
-                if (pos) {
-                    pos.lifetime = COIN_LIFETIME;
-                    coins.push(pos);
-                }
-            }
-
-            function spawnMonster() {
-                if (monsters.length >= MAX_MONSTERS) return;
-                const pos = generateSafePosition(40 * objectScale, level <= 3, level >= 3);
-                if (pos) monsters.push({ ...pos, dir: Math.random() > 0.5 ? 1 : -1, lifetime: Math.floor(Math.random() * (MONSTER_LIFETIME_MAX - MONSTER_LIFETIME_MIN)) + MONSTER_LIFETIME_MIN, vy: 0 });
-            }
-
-            function spawnPowerup() {
-                if (powerups.length >= MAX_POWERUPS) return;
-                const pos = generateSafePosition(15 * objectScale, false, level >= 3);
-                if (pos) powerups.push(pos);
-            }
-
-            function resetQuizIndices() {
-                usedQuizIndices = [];
-            }
-
-            function startQuiz() {
-                if (!gameStarted || gameOver || finalQuiz || quizActive) return;
-                quizActive = true;
-                quizCount++;
-                quizTitle.textContent = 'Викторина по энергосбережению!';
-                if (usedQuizIndices.length >= quizzes.length) resetQuizIndices();
-                let availableIndices = quizzes.map((_, i) => i).filter(i => !usedQuizIndices.includes(i));
-                if (availableIndices.length === 0) {
-                    resetQuizIndices();
-                    availableIndices = quizzes.map((_, i) => i);
-                }
-                const quizIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-                usedQuizIndices.push(quizIndex);
-                currentQuiz = quizzes[quizIndex];
-                questionEl.textContent = escapeHTML(currentQuiz.question);
-                option1.textContent = escapeHTML(currentQuiz.options[0]);
-                option2.textContent = escapeHTML(currentQuiz.options[1]);
-                option3.textContent = escapeHTML(currentQuiz.options[2]);
-                quizEl.style.display = 'block';
-                quizEl.classList.remove('final');
-                quizTimer = QUIZ_DURATION;
-                quizTimerFill.style.width = '100%';
-                quizTimerText.textContent = 'Осталось: 15 сек';
-                quizTimerFill.parentElement.classList.remove('warning');
-                const pos = generateSafePosition(50 * objectScale, level <= 3);
-                if (pos) teacher = { x: pos.x, y: pos.y, lifetime: TEACHER_LIFETIME };
-                [option1, option2, option3, skipQuiz].forEach((btn, i) => {
-                    btn.classList.remove('show');
-                    btn.disabled = false;
-                    setTimeout(() => btn.classList.add('show'), i * 100);
-                });
-            }
-
-            function checkAnswer(index) {
-                if (!quizActive) return;
-                const button = [option1, option2, option3][index];
-                button.classList.add('clicked');
-                setTimeout(() => {
-                    button.classList.remove('clicked');
-                    [option1, option2, option3, skipQuiz].forEach(btn => btn.disabled = false);
-                }, 200);
-                if (index === currentQuiz.correct) {
-                    score += finalQuiz ? 100 : level >= 4 ? 100 : 75;
-                    showMessage(`Правильно! ${currentQuiz.fact}`, true);
-                    if (!finalQuiz) {
-                        quizEl.style.display = 'none';
-                        quizActive = false;
-                        quizTimer = 0;
-                        [option1, option2, option3, skipQuiz].forEach(btn => btn.disabled = true);
-                        spawnCoin();
-                        spawnPowerup();
-                        teacher = null;
-                    }
-                    if (finalQuiz) {
-                        quizEl.style.display = 'none';
-                        quizActive = false;
-                        quizTimer = 0;
-                        [option1, option2, option3, skipQuiz].forEach(btn => btn.disabled = true);
-                        gameOver = true;
-                        winScreen.style.display = 'block';
-                        finalQuiz = false;
-                        startAnimationTimer = 0;
-                        saveGame();
-                    }
-                } else {
-                    if (finalQuiz) {
-                        health -= 20;
-                        showMessage(`Неправильно! Энергия -20. ${currentQuiz.fact}`, false);
-                        updateUI();
-                        quizTimer = QUIZ_DURATION;
-                        quizTimerFill.style.width = '100%';
-                        quizTimerText.textContent = 'Осталось: 15 сек';
-                        quizTimerFill.parentElement.classList.remove('warning');
-                        if (health <= 0) {
-                            gameOver = true;
-                            quizEl.style.display = 'none';
-                            quizActive = false;
-                            finalQuiz = false;
-                            showEndScreen();
-                        }
-                    } else {
-                        quizEl.style.display = 'none';
-                        quizActive = false;
-                        quizTimer = 0;
-                        [option1, option2, option3, skipQuiz].forEach(btn => btn.disabled = true);
-                        health -= 10;
-                        if (health <= 0) {
-                            gameOver = true;
-                            quizEl.style.display = 'none';
-                            quizActive = false;
-                            finalQuiz = false;
-                            showEndScreen();
-                        }
-                        showMessage(`Неправильно. ${currentQuiz.fact}`, false);
-                        spawnMonster();
-                        if (level >= 4) spawnMonster();
-                        teacher = null;
-                        updateUI();
-                    }
-                }
-                lastTime = performance.now();
-                update();
-                render();
-            }
-
-            function skipQuizFn() {
-                if (!quizActive || finalQuiz) return;
-                quizEl.style.display = 'none';
-                quizActive = false;
-                quizTimer = 0;
-                [option1, option2, option3, skipQuiz].forEach(btn => btn.disabled = true);
-                setTimeout(() => {
-                    [option1, option2, option3, skipQuiz].forEach(btn => btn.disabled = false);
-                }, 500);
-                health -= 15;
-                updateUI();
-                if (health <= 0) {
-                    gameOver = true;
-                    quizEl.style.display = 'none';
-                    quizActive = false;
-                    finalQuiz = false;
-                    showEndScreen();
-                }
-                teacher = null;
-                lastTime = performance.now();
-                update();
-                render();
-            }
-
-            function updateLevel() {
-                platforms.length = 0;
-                platforms.push(
-                    { x: 0, y: canvas.height - 50 * platformScale, width: canvas.width, height: 50 * platformScale },
-                    { x: 250, y: canvas.height - 100 * platformScale, width: 200 * platformScale, height: 25 * platformScale },
-                    { x: 600, y: canvas.height - 150 * platformScale, width: 200 * platformScale, height: 25 * platformScale }
-                );
-                if (level >= 2) platforms.push(
-                    { x: 400, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
-                );
-                if (level >= 3) platforms.push(
-                    { x: 200, y: canvas.height - 350 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
-                    { x: 400, y: canvas.height - 200 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
-                    { x: 650, y: canvas.height - 300 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
-                );
-                if (level >= 4) platforms.push(
-                    { x: 300, y: canvas.height - 400 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
-                    { x: 600, y: canvas.height - 350 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
-                );
-                if (level >= 5) platforms.push(
-                    { x: 100, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
-                    { x: 500, y: canvas.height - 300 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
-                );
-                if (level >= 6) platforms.push(
-                    { x: 800, y: canvas.height - 250 * platformScale, width: 150 * platformScale, height: 25 * platformScale },
-                    { x: 300, y: canvas.height - 200 * platformScale, width: 150 * platformScale, height: 25 * platformScale }
-                );
-                if (level === 3 || level === 5) spawnPowerup();
-            }
-
-            function showEndScreen() {
-                finalScoreEl.textContent = escapeHTML(score.toString());
-                let highScore = 0;
-                try {
-                    highScore = localStorage.getItem('highScore') || 0;
-                    if (score > highScore) {
-                        highScore = score;
-                        localStorage.setItem('highScore', highScore);
-                        showMessage('Новый рекорд!', true);
-                    }
-                } catch (e) {
-                    console.warn('localStorage недоступен:', e);
-                    showMessage('Сохранение рекорда недоступно', false);
-                }
-                highScoreEl.textContent = escapeHTML(highScore.toString());
-                endScreen.style.display = 'block';
-                saveGame();
-                if (Telegram.WebApp) {
-                    Telegram.WebApp.MainButton.setText('Поделиться результатом');
-                    Telegram.WebApp.MainButton.show();
-                    Telegram.WebApp.MainButton.onClick(() => {
-                        Telegram.WebApp.shareUrl(window.location.href, `Мои очки: ${score}! Играй в Эко-Героя!`);
-                    });
-                    Telegram.WebApp.enableClosingConfirmation();
-                }
-            }
-
-            function togglePause() {
-                paused = !paused;
-                pauseScreen.style.display = paused ? 'block' : 'none';
-                if (!paused) {
-                    lastFrameTime = performance.now();
-                }
-                lastTime = performance.now();
-            }
-
-            function startGame() {
-                gameStarted = true;
-                introScreen.style.display = 'none';
-                spawnCoin();
-                spawnCoin();
-                spawnMonster();
-                spawnPowerup();
-                drawBackground();
-                initStaticBackground();
-                isFocused = true;
-                lastFrameTime = performance.now();
-                lastTime = performance.now();
-                startAnimationTimer = 60;
-                requestAnimationFrame(gameLoop);
-            }
-
-            function restartGame() {
-                endScreen.style.display = 'none';
-                winScreen.style.display = 'none';
-                quizEl.style.display = 'none';
-                quizActive = false;
-                finalQuiz = false;
-                quizTimer = 0;
-                [option1, option2, option3, skipQuiz].forEach(btn => btn.disabled = true);
-                quizEl.classList.remove('final');
-                score = 0;
-                lastScore = -1;
-                level = 1;
-                lastLevel = -1;
-                health = 100;
-                lastHealth = -1;
-                gameOver = false;
-                paused = false;
-                quizTriggered = false;
-                quizCount = 0;
-                resetQuizIndices();
-                coins = [];
-                monsters = [];
-                powerups = [];
-                boss = null;
-                teacher = null;
-                player = { x: 50, y: canvas.height - 110 * objectScale, width: 60 * objectScale, height: 60 * objectScale, vy: 0, jumping: false, scale: 1, scaleTimer: 0 };
-                updateLevel();
-                errorEl.textContent = '';
-                messageEl.style.display = 'none';
-                pauseScreen.style.display = 'none';
-                startAnimationTimer = 0;
-                updateUI();
-                spawnMonster();
-                spawnPowerup();
-                drawBackground();
-                gameStarted = false;
-                startGame();
-                if (Telegram.WebApp) {
-                    Telegram.WebApp.MainButton.hide();
-                }
-            }
-
-            function addTouchControls() {
-                touchLeft.removeEventListener('touchstart', handleTouchLeftStart);
-                touchLeft.removeEventListener('touchend', handleTouchLeftEnd);
-                touchRight.removeEventListener('touchstart', handleTouchRightStart);
-                touchRight.removeEventListener('touchend', handleTouchRightEnd);
-                touchJump.removeEventListener('touchstart', handleTouchJumpStart);
-                touchJump.removeEventListener('touchend', handleTouchJumpEnd);
-
-                function handleTouchLeftStart() { keys['ArrowLeft'] = true; }
-                function handleTouchLeftEnd() { keys['ArrowLeft'] = false; }
-                function handleTouchRightStart() { keys['ArrowRight'] = true; }
-                function handleTouchRightEnd() { keys['ArrowRight'] = false; }
-                function handleTouchJumpStart() { 
-                    if (!player.jumping) {
-                        keys['Space'] = true;
-                        setTimeout(() => { keys['Space'] = false; }, 100);
-                    }
-                }
-                function handleTouchJumpEnd() { keys['Space'] = false; }
-
-                touchLeft.addEventListener('touchstart', handleTouchLeftStart);
-                touchLeft.addEventListener('touchend', handleTouchLeftEnd);
-                touchRight.addEventListener('touchstart', handleTouchRightStart);
-                touchRight.addEventListener('touchend', handleTouchRightEnd);
-                touchJump.addEventListener('touchstart', handleTouchJumpStart);
-                touchJump.addEventListener('touchend', handleTouchJumpEnd);
-            }
-
-            document.addEventListener('keydown', e => {
-                if (e.code === 'KeyP' && gameStarted && !gameOver && !quizActive) {
-                    togglePause();
-                }
-                if (!quizActive) {
-                    keys[e.code] = true;
-                }
+    <script>
+        // Символы и их вероятности
+        const symbols = ["🍒", "🔔", "💎", "7️⃣", "BAR", "🌟"];
+        const weights = [0.3, 0.25, 0.2, 0.15, 0.05, 0.05];
+
+        // Элементы DOM
+        const reel1 = document.getElementById("reel1");
+        const reel2 = document.getElementById("reel2");
+        const reel3 = document.getElementById("reel3");
+        const balanceElement = document.getElementById("balance");
+        const jackpotElement = document.getElementById("jackpot");
+        const resultElement = document.getElementById("result");
+        const spinButton = document.getElementById("spin-button");
+        const dailyBonusButton = document.getElementById("daily-bonus");
+        const bonusGame = document.getElementById("bonus-game");
+
+        let balance = 1000;
+        let jackpot = 1000;
+        let isSpinning = false;
+        let currentWin = 0;
+        const spinSound = new Audio("https://freesound.org/data/previews/120/120375_2155075-lq.mp3");
+        const winSound = new Audio("https://freesound.org/data/previews/511/511484_9156141-lq.mp3");
+
+        // Конфетти для джекпота
+        const confettiCanvas = document.getElementById("confetti-canvas");
+        const confetti = window.confetti.create(confettiCanvas, { resize: true });
+        function launchConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ["#ff69b4", "#00ced1", "#ffd700", "#ff4500"]
             });
-
-            document.addEventListener('keyup', e => {
-                keys[e.code] = false;
-            });
-
-            option1.addEventListener('click', () => checkAnswer(0));
-            option2.addEventListener('click', () => checkAnswer(1));
-            option3.addEventListener('click', () => checkAnswer(2));
-            skipQuiz.addEventListener('click', skipQuizFn);
-
-            window.addEventListener('focus', () => {
-                isFocused = true;
-                lastFrameTime = performance.now();
-                lastTime = performance.now();
-            });
-
-            window.addEventListener('blur', () => {
-                isFocused = false;
-                if (!paused && gameStarted && !quizActive && !gameOver) {
-                    togglePause();
-                }
-            });
-
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight - 80;
-                bgCanvas.width = canvas.width;
-                bgCanvas.height = canvas.height;
-                staticBgCanvas.width = canvas.width;
-                staticBgCanvas.height = canvas.height;
-                initStaticBackground();
-                drawBackground();
-                player.x = Math.min(player.x, canvas.width - player.width);
-                player.y = Math.min(player.y, canvas.height - player.height);
-            });
-
-            // Инициализация игры
-            addTouchControls();
-            initStaticBackground();
-            drawBackground();
-            introScreen.style.display = 'block';
-        } catch (e) {
-            console.error('Ошибка инициализации игры:', e);
-            showError('Ошибка загрузки игры. Попробуйте перезагрузить страницу.');
         }
+
+        // Загрузка сохраненных данных
+        window.onload = () => {
+            const savedBalance = localStorage.getItem("balance");
+            const savedJackpot = localStorage.getItem("jackpot");
+            const lastBonus = localStorage.getItem("lastBonus");
+            if (savedBalance) balance = parseInt(savedBalance);
+            if (savedJackpot) jackpot = parseInt(savedJackpot);
+            balanceElement.textContent = balance;
+            jackpotElement.textContent = jackpot;
+            const now = Date.now();
+            if (lastBonus && now - lastBonus < 24 * 60 * 60 * 1000) {
+                dailyBonusButton.disabled = true;
+                dailyBonusButton.textContent = "Bonus Claimed!";
+            }
+        };
+
+        // Функция вращения барабанов
+        function spinReels() {
+            if (isSpinning || balance < 10) {
+                resultElement.textContent = balance < 10 ? "Not enough coins!" : "Wait for the spin to finish!";
+                return;
+            }
+
+            isSpinning = true;
+            spinButton.disabled = true;
+            dailyBonusButton.disabled = true;
+            bonusGame.classList.remove("active");
+            balance -= 10;
+            jackpot += 5;
+            balanceElement.textContent = balance;
+            jackpotElement.textContent = jackpot;
+            spinSound.play().catch(() => {});
+
+            // Анимация вращения
+            reel1.classList.add("spinning");
+            reel2.classList.add("spinning");
+            reel3.classList.add("spinning");
+
+            // Симуляция вращения
+            let spinCount = 0;
+            const spinInterval = setInterval(() => {
+                reel1.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                reel2.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                reel3.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                spinCount++;
+                if (spinCount > 15) {
+                    clearInterval(spinInterval);
+                    endSpin();
+                }
+            }, 100);
+        }
+
+        // Завершение спина и проверка выигрыша
+        function endSpin() {
+            reel1.classList.remove("spinning");
+            reel2.classList.remove("spinning");
+            reel3.classList.remove("spinning");
+
+            // Генерация результата
+            const result = [
+                weightedRandom(symbols, weights),
+                weightedRandom(symbols, weights),
+                weightedRandom(symbols, weights)
+            ];
+            reel1.textContent = result[0];
+            reel2.textContent = result[1];
+            reel3.textContent = result[2];
+
+            // Проверка выигрыша
+            currentWin = 0;
+            let isJackpot = Math.random() < 0.01;
+            if (result[0] === result[1] && result[1] === result[2]) {
+                if (isJackpot && result[0] === "🌟") {
+                    currentWin = jackpot;
+                    jackpot = 1000;
+                    resultElement.textContent = `🎯 JACKPOT! You won ${currentWin} coins!`;
+                    reel1.classList.add("win-flash", "shake");
+                    reel2.classList.add("win-flash", "shake");
+                    reel3.classList.add("win-flash", "shake");
+                    winSound.play().catch(() => {});
+                    launchConfetti(); // Запуск конфетти
+                } else if (result[0] === "7️⃣") {
+                    currentWin = 100;
+                    reel1.classList.add("win-flash");
+                    reel2.classList.add("win-flash");
+                    reel3.classList.add("win-flash");
+                    winSound.play().catch(() => {});
+                } else if (result[0] === "💎") {
+                    currentWin = 50;
+                    reel1.classList.add("win-flash");
+                    reel2.classList.add("win-flash");
+                    reel3.classList.add("win-flash");
+                    winSound.play().catch(() => {});
+                } else if (result[0] === "🍒") {
+                    currentWin = 10;
+                    reel1.classList.add("win-flash");
+                    reel2.classList.add("win-flash");
+                    reel3.classList.add("win-flash");
+                    winSound.play().catch(() => {});
+                }
+            }
+
+            if (result[0] === "💎" && result[1] === "💎" && result[2] === "💎") {
+                bonusGame.classList.add("active");
+                resultElement.textContent = "🎉 Bonus Game! Guess the card color to double your win!";
+            } else {
+                balance += currentWin;
+                balanceElement.textContent = balance;
+                jackpotElement.textContent = jackpot;
+                resultElement.textContent = currentWin > 0 ? `🎉 You won ${currentWin} coins!` : "Try again!";
+                isSpinning = false;
+                spinButton.disabled = false;
+                dailyBonusButton.disabled = false;
+            }
+
+            // Сохранение данных
+            localStorage.setItem("balance", balance);
+            localStorage.setItem("jackpot", jackpot);
+        }
+
+        // Бонусная игра: угадать цвет карты
+        function guessCard(guess) {
+            const isRed = Math.random() > 0.5;
+            const correct = (isRed && guess === "red") || (!isRed && guess === "black");
+
+            if (correct) {
+                currentWin *= 2;
+                resultElement.textContent = `🎴 Correct! Your win is doubled to ${currentWin} coins!`;
+                winSound.play().catch(() => {});
+            } else {
+                currentWin = 0;
+                resultElement.textContent = "🎴 Wrong guess! No bonus win.";
+            }
+
+            balance += currentWin;
+            balanceElement.textContent = balance;
+            localStorage.setItem("balance", balance);
+            bonusGame.classList.remove("active");
+            isSpinning = false;
+            spinButton.disabled = false;
+            dailyBonusButton.disabled = false;
+        }
+
+        // Ежедневный бонус
+        function claimDailyBonus() {
+            const now = Date.now();
+            const lastBonus = localStorage.getItem("lastBonus");
+            if (lastBonus && now - lastBonus < 24 * 60 * 60 * 1000) {
+                resultElement.textContent = "Come back tomorrow for your next bonus!";
+                return;
+            }
+
+            balance += 50;
+            balanceElement.textContent = balance;
+            resultElement.textContent = "🎁 You claimed 50 bonus coins!";
+            localStorage.setItem("balance", balance);
+            localStorage.setItem("lastBonus", now);
+            dailyBonusButton.disabled = true;
+            dailyBonusButton.textContent = "Bonus Claimed!";
+            winSound.play().catch(() => {});
+        }
+
+        // Функция для выбора символа с учетом весов
+        function weightedRandom(items, weights) {
+            const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+            const rand = Math.random() * totalWeight;
+            let currentWeight = 0;
+            for (let i = 0; i < items.length; i++) {
+                currentWeight += weights[i];
+                if (rand <= currentWeight) return items[i];
+            }
+            return items[items.length - 1];
+        }
+
+        // Обработчики кнопок
+        spinButton.addEventListener("click", spinReels);
+        dailyBonusButton.addEventListener("click", claimDailyBonus);
     </script>
 </body>
 </html>
